@@ -1196,7 +1196,7 @@ const WIDTH  = canvas.width;
 const HEIGHT = canvas.height;
 
 let score=0;
-let lives=300;
+let lives=10;
 let coins=0;       // spendable currency (separate from score)
 let gameOver=false;
 let paused=false;
@@ -1591,7 +1591,7 @@ const SHIP_DEFS = [
     cockpitColor:'#001f3f',
     shape:   'standard',
     // stats
-    lives:       300,
+    lives:       10,
     speed:       7,
     fireCooldown:180,
     bulletDamage:1,
@@ -1611,7 +1611,7 @@ const SHIP_DEFS = [
     accentColor: '#ffffff',
     cockpitColor:'#0a1a00',
     shape:   'arrow',
-    lives:       300,
+    lives:       10,
     speed:       12,
     fireCooldown:140,
     bulletDamage:1,
@@ -1630,7 +1630,7 @@ const SHIP_DEFS = [
     accentColor: '#ffaa66',
     cockpitColor:'#1a0500',
     shape:   'wide',
-    lives:       300,
+    lives:       10,
     speed:       4.5,
     fireCooldown:240,
     bulletDamage:2,
@@ -1649,7 +1649,7 @@ const SHIP_DEFS = [
     accentColor: '#ff88ff',
     cockpitColor:'#0f0020',
     shape:   'needle',
-    lives:       300,
+    lives:       10,
     speed:       6,
     fireCooldown:280,
     bulletDamage:4,
@@ -2368,7 +2368,7 @@ let lastDmgPowerup=Date.now()+(28000+Math.random()*12000); // first dmg boost af
 // HEALTH POWER-UP STATE
 //=========================
 
-const MAX_LIVES=300;
+const MAX_LIVES=50;
 const healthPowerups=[];
 const healParticles=[];
 
@@ -3085,7 +3085,7 @@ canvas.addEventListener('click',e=>{
 function restartGame(){
 
 score=0;
-lives=300;
+lives=10;
 coins=0;
 gameOver=false;
 paused=false;
