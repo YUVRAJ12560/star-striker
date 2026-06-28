@@ -1032,6 +1032,21 @@ canvas{
           <div class="toggle on" id="toggleParticles" onclick="toggleSetting('particles',this)"></div>
         </div>
       </div>
+
+      <!-- Divider -->
+      <div style="border-top:1px solid rgba(255,80,80,0.2);margin:18px 0 14px;"></div>
+
+      <!-- Reset section -->
+      <div style="margin-bottom:8px">
+        <div style="color:rgba(255,120,120,0.8);font-size:clamp(11px,1.2vw,13px);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">⚠ Danger Zone</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="mbtn danger" style="text-align:left;font-size:clamp(11px,1.2vw,13px)" onclick="resetAllProgress()">
+            🗑 Reset All Progress
+            <span style="display:block;font-size:10px;letter-spacing:1px;color:rgba(255,160,160,0.6);margin-top:2px;font-weight:400">Clears achievements, high scores &amp; unlocks</span>
+          </button>
+        </div>
+      </div>
+
       <button class="mbtn panel-back" onclick="closePanel('panelSettings')">← Back</button>
     </div>
   </div>
@@ -1165,18 +1180,23 @@ canvas{
 
 <script>
 
-const canvas=document.getElementById("gameCanvas");
-const ctx=canvas.getContext("2d");
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
 // Fill the full browser window
 canvas.width  = window.innerWidth;
 canvas.height = window.innerHeight;
 
-const WIDTH=canvas.width;
-const HEIGHT=canvas.height;
+// Use getters so WIDTH/HEIGHT always reflect the current canvas size
+// even after window resize events
+function getWidth()  { return canvas.width;  }
+function getHeight() { return canvas.height; }
+
+const WIDTH  = canvas.width;
+const HEIGHT = canvas.height;
 
 let score=0;
-let lives=100;
+let lives=300;
 let coins=0;       // spendable currency (separate from score)
 let gameOver=false;
 let paused=false;
@@ -1571,7 +1591,7 @@ const SHIP_DEFS = [
     cockpitColor:'#001f3f',
     shape:   'standard',
     // stats
-    lives:       3,
+    lives:       300,
     speed:       7,
     fireCooldown:180,
     bulletDamage:1,
@@ -1591,7 +1611,7 @@ const SHIP_DEFS = [
     accentColor: '#ffffff',
     cockpitColor:'#0a1a00',
     shape:   'arrow',
-    lives:       2,
+    lives:       300,
     speed:       12,
     fireCooldown:140,
     bulletDamage:1,
@@ -1610,7 +1630,7 @@ const SHIP_DEFS = [
     accentColor: '#ffaa66',
     cockpitColor:'#1a0500',
     shape:   'wide',
-    lives:       5,
+    lives:       300,
     speed:       4.5,
     fireCooldown:240,
     bulletDamage:2,
@@ -1629,7 +1649,7 @@ const SHIP_DEFS = [
     accentColor: '#ff88ff',
     cockpitColor:'#0f0020',
     shape:   'needle',
-    lives:       2,
+    lives:       300,
     speed:       6,
     fireCooldown:280,
     bulletDamage:4,
@@ -2348,7 +2368,7 @@ let lastDmgPowerup=Date.now()+(28000+Math.random()*12000); // first dmg boost af
 // HEALTH POWER-UP STATE
 //=========================
 
-const MAX_LIVES=5;
+const MAX_LIVES=300;
 const healthPowerups=[];
 const healParticles=[];
 
@@ -2604,176 +2624,150 @@ player.y+=player.speed;
 
 function drawHUD(){
 
-ctx.fillStyle="white";
-ctx.font="28px Arial";
-ctx.fillText("Score : "+score,20,40);
+ctx.save();
 
-// Coin counter (below score)
+// ── Score (top-left) ───────────────────────────────────────
+ctx.fillStyle="white";
+ctx.font="bold 24px Arial";
+ctx.textAlign="left";
+ctx.fillText("Score: "+score.toLocaleString(), 20, 36);
+
+// Coin counter
 ctx.shadowColor="#ffd700";
 ctx.shadowBlur=8;
 ctx.fillStyle="#ffd700";
-ctx.font="bold 18px Arial";
-ctx.fillText("🪙 "+coins, 20, 68);
+ctx.font="bold 16px Arial";
+ctx.fillText("🪙 "+coins, 20, 60);
 ctx.shadowBlur=0;
 
-// ── Mode indicator (top-right corner under lives) ───────────
-const modeDef = typeof MODE_DEFS !== 'undefined'
-  ? MODE_DEFS.find(d=>d.id===selectedMode) : null;
+// ── Lives (top-right) ─────────────────────────────────────
+ctx.font="22px Arial";
+ctx.textAlign="right";
+ctx.fillStyle="white";
+ctx.fillText("❤️  x" + lives, canvas.width-20, 36);
+ctx.textAlign="left";
+
+// ── Mode indicator (top-right, below lives) ───────────────
+const modeDef = MODE_DEFS ? MODE_DEFS.find(d=>d.id===selectedMode) : null;
 if(modeDef){
   ctx.textAlign="right";
-  ctx.font="bold 13px Arial";
+  ctx.font="bold 12px Arial";
   ctx.fillStyle=modeDef.diffColor;
   ctx.shadowColor=modeDef.diffColor;
-  ctx.shadowBlur=6;
-  ctx.fillText(modeDef.icon+" "+modeDef.name.toUpperCase(), WIDTH-20, 60);
+  ctx.shadowBlur=5;
+  ctx.fillText(modeDef.icon+" "+modeDef.name.toUpperCase(), canvas.width-20, 58);
   ctx.shadowBlur=0;
   ctx.textAlign="left";
 }
 
-// ── Blitz countdown timer ───────────────────────────────────
+// ── Blitz timer (top-centre, clear of level text) ─────────
 if(selectedMode==='blitz'){
-  const elapsed  = Date.now() - blitzStartTime;
-  const remaining= Math.max(0, blitzTimeLimit - elapsed);
-  const secs     = Math.ceil(remaining/1000);
-  const mins     = Math.floor(secs/60);
-  const ss       = String(secs%60).padStart(2,'0');
-  const urgent   = remaining < 30000;
-  ctx.textAlign  = "center";
-  ctx.font       = `bold ${urgent?28:22}px Arial`;
-  ctx.fillStyle  = urgent ? '#ff4444' : '#ffee00';
-  ctx.shadowColor= urgent ? '#ff0000' : '#ffcc00';
-  ctx.shadowBlur = urgent ? 18 : 8;
-  if(urgent && Math.floor(Date.now()/500)%2===0){
-    ctx.globalAlpha = 0.7 + 0.3*Math.sin(Date.now()*0.01);
-  }
-  ctx.fillText(`⏱ ${mins}:${ss}`, WIDTH/2, urgent?26:22);
+  const elapsed   = Date.now() - blitzStartTime;
+  const remaining = Math.max(0, blitzTimeLimit - elapsed);
+  const secs      = Math.ceil(remaining/1000);
+  const mins      = Math.floor(secs/60);
+  const ss        = String(secs%60).padStart(2,'0');
+  const urgent    = remaining < 30000;
+  ctx.textAlign   = "center";
+  ctx.font        = `bold ${urgent?26:20}px Arial`;
+  ctx.fillStyle   = urgent ? '#ff4444' : '#ffee00';
+  ctx.shadowColor = urgent ? '#ff0000' : '#ffcc00';
+  ctx.shadowBlur  = urgent ? 16 : 6;
+  // Blink when urgent
+  if(urgent) ctx.globalAlpha = 0.65 + 0.35*Math.sin(Date.now()*0.012);
+  ctx.fillText(`⏱ ${mins}:${ss}`, canvas.width/2, 78);
   ctx.globalAlpha = 1;
   ctx.shadowBlur  = 0;
   ctx.textAlign   = "left";
 }
 
-// Level display (top-centre)
+// ── Level (top-centre) ────────────────────────────────────
 ctx.textAlign="center";
 ctx.shadowColor="#ffdd00";
 ctx.shadowBlur=10;
 ctx.fillStyle="#ffdd00";
-ctx.font="bold 26px Arial";
-ctx.fillText("LEVEL "+level, WIDTH/2, 40);
+ctx.font="bold 24px Arial";
+ctx.fillText("LEVEL "+level, canvas.width/2, 36);
 ctx.shadowBlur=0;
 ctx.textAlign="left";
 
-// Wave progress bar (only during wave phase)
+// ── Wave progress bar ─────────────────────────────────────
 if(bossPhase==="wave"){
-const size=waveSize(level);
-const progress=Math.min(1, waveKilled/size);
-const barW=220, barH=10;
-const barX=WIDTH/2-barW/2;
-const barY=50;
-
-// Track
-ctx.fillStyle="rgba(255,255,255,0.12)";
-ctx.fillRect(barX,barY,barW,barH);
-
-// Fill – turns red as wave nears end
-const r=Math.round(255*progress);
-const g=Math.round(255*(1-progress));
-ctx.fillStyle=`rgb(${r},${g},40)`;
-ctx.fillRect(barX,barY,barW*progress,barH);
-
-// Border
-ctx.strokeStyle="rgba(255,255,255,0.3)";
-ctx.lineWidth=1;
-ctx.strokeRect(barX,barY,barW,barH);
-
-// Label
-ctx.fillStyle="rgba(255,255,255,0.7)";
-ctx.font="12px Arial";
-ctx.textAlign="center";
-ctx.fillText("WAVE  "+waveKilled+" / "+size, WIDTH/2, barY+barH+14);
-ctx.textAlign="left";
+  const size=waveSize(level);
+  const progress=Math.min(1, waveKilled/size);
+  const barW=200, barH=8;
+  const barX=canvas.width/2-barW/2;
+  const barY=46;
+  ctx.fillStyle="rgba(255,255,255,0.1)";
+  ctx.fillRect(barX,barY,barW,barH);
+  const r=Math.round(255*progress);
+  const g=Math.round(255*(1-progress));
+  ctx.fillStyle=`rgb(${r},${g},40)`;
+  ctx.fillRect(barX,barY,barW*progress,barH);
+  ctx.strokeStyle="rgba(255,255,255,0.25)";
+  ctx.lineWidth=1;
+  ctx.strokeRect(barX,barY,barW,barH);
+  ctx.fillStyle="rgba(255,255,255,0.6)";
+  ctx.font="11px Arial";
+  ctx.textAlign="center";
+  ctx.fillText("WAVE  "+waveKilled+" / "+size, canvas.width/2, barY+barH+13);
+  ctx.textAlign="left";
 }
 
-// Boss fight indicator
+// ── Boss fight indicator ──────────────────────────────────
 if(bossPhase==="fighting" && boss){
-const pulse=0.7+0.3*Math.sin(Date.now()*0.008);
-ctx.textAlign="center";
-ctx.shadowColor=boss.pal.glow;
-ctx.shadowBlur=20;
-ctx.globalAlpha=pulse;
-ctx.fillStyle=boss.pal.dome;
-ctx.font="bold 20px Arial";
-ctx.fillText("⚔ BOSS FIGHT — LV"+boss.level+" ⚔", WIDTH/2, 70);
-ctx.globalAlpha=1;
-ctx.shadowBlur=0;
-ctx.textAlign="left";
+  const pulse=0.7+0.3*Math.sin(Date.now()*0.008);
+  ctx.textAlign="center";
+  ctx.shadowColor=boss.pal.glow;
+  ctx.shadowBlur=20;
+  ctx.globalAlpha=pulse;
+  ctx.fillStyle=boss.pal.dome;
+  ctx.font="bold 18px Arial";
+  ctx.fillText("⚔ BOSS FIGHT — LV"+boss.level+" ⚔", canvas.width/2, 70);
+  ctx.globalAlpha=1;
+  ctx.shadowBlur=0;
+  ctx.textAlign="left";
 }
 
-// Lives — single heart icon + count
-ctx.font="22px Arial";
-ctx.textAlign="right";
-ctx.fillStyle="white";
-ctx.fillText("❤️  x" + lives, WIDTH-20, 40);
-ctx.textAlign="left";
-
-// Rapid fire countdown
+// ── Active power-up countdowns ────────────────────────────
+let puRow=95;
 if(rapidFireActive){
-const secsLeft=Math.ceil((rapidFireExpiry-Date.now())/1000);
-ctx.shadowColor="#00ff44";
-ctx.shadowBlur=10;
-ctx.fillStyle="#00ff44";
-ctx.font="bold 22px Arial";
-ctx.fillText("⚡ RAPID FIRE  "+secsLeft+"s",20,95);
-ctx.shadowBlur=0;
+  const s=Math.ceil((rapidFireExpiry-Date.now())/1000);
+  ctx.shadowColor="#00ff44"; ctx.shadowBlur=8;
+  ctx.fillStyle="#00ff44"; ctx.font="bold 20px Arial";
+  ctx.fillText("⚡ RAPID FIRE  "+s+"s",20,puRow);
+  ctx.shadowBlur=0; puRow+=28;
 }
-
-// Shield countdown
 if(shieldActive){
-const secsLeft=Math.ceil((shieldExpiry-Date.now())/1000);
-const row=rapidFireActive?125:95;
-ctx.shadowColor="#4488ff";
-ctx.shadowBlur=10;
-ctx.fillStyle="#66aaff";
-ctx.font="bold 22px Arial";
-ctx.fillText("🛡 SHIELD  "+secsLeft+"s",20,row);
-ctx.shadowBlur=0;
+  const s=Math.ceil((shieldExpiry-Date.now())/1000);
+  ctx.shadowColor="#4488ff"; ctx.shadowBlur=8;
+  ctx.fillStyle="#66aaff"; ctx.font="bold 20px Arial";
+  ctx.fillText("🛡 SHIELD  "+s+"s",20,puRow);
+  ctx.shadowBlur=0; puRow+=28;
 }
-
-// Damage boost countdown
 if(dmgBoostActive){
-const secsLeft=Math.ceil((dmgBoostExpiry-Date.now())/1000);
-let row=95;
-if(rapidFireActive) row+=30;
-if(shieldActive) row+=30;
-ctx.shadowColor="#ff3300";
-ctx.shadowBlur=10;
-ctx.fillStyle="#ff6633";
-ctx.font="bold 22px Arial";
-ctx.fillText("🔥 DMG BOOST  "+secsLeft+"s",20,row);
-ctx.shadowBlur=0;
+  const s=Math.ceil((dmgBoostExpiry-Date.now())/1000);
+  ctx.shadowColor="#ff3300"; ctx.shadowBlur=8;
+  ctx.fillStyle="#ff6633"; ctx.font="bold 20px Arial";
+  ctx.fillText("🔥 DMG BOOST  "+s+"s",20,puRow);
+  ctx.shadowBlur=0; puRow+=28;
 }
-
-// Multi shot countdown
 if(multiShotActive){
-const secsLeft=Math.ceil((multiShotExpiry-Date.now())/1000);
-let row=95;
-if(rapidFireActive) row+=30;
-if(shieldActive)    row+=30;
-if(dmgBoostActive)  row+=30;
-ctx.shadowColor="#ffee00";
-ctx.shadowBlur=10;
-ctx.fillStyle="#ffee00";
-ctx.font="bold 22px Arial";
-ctx.fillText("🔱 MULTI SHOT  "+secsLeft+"s",20,row);
-ctx.shadowBlur=0;
+  const s=Math.ceil((multiShotExpiry-Date.now())/1000);
+  ctx.shadowColor="#ffee00"; ctx.shadowBlur=8;
+  ctx.fillStyle="#ffee00"; ctx.font="bold 20px Arial";
+  ctx.fillText("� MULTI SHOT  "+s+"s",20,puRow);
+  ctx.shadowBlur=0; puRow+=28;
+}
+if(autoKillActive){
+  const s=Math.ceil((autoKillExpiry-Date.now())/1000);
+  ctx.shadowColor="#00ffff"; ctx.shadowBlur=8;
+  ctx.fillStyle="#00ffff"; ctx.font="bold 20px Arial";
+  ctx.fillText("☇ AUTO-KILL  "+s+"s",20,puRow);
+  ctx.shadowBlur=0;
 }
 
-drawAutoKillHUD();
-
-// ── Final cleanup — ensure shadow state is clear ──────────
-ctx.shadowBlur   = 0;
-ctx.shadowColor  = 'transparent';
-ctx.textAlign    = 'left';
-ctx.globalAlpha  = 1;
+ctx.restore();
 
 }
 
@@ -3091,7 +3085,7 @@ canvas.addEventListener('click',e=>{
 function restartGame(){
 
 score=0;
-lives=3;
+lives=300;
 coins=0;
 gameOver=false;
 paused=false;
@@ -4967,22 +4961,6 @@ function drawZapEffects(){
   }
 }
 
-function drawAutoKillHUD(){
-  if(!autoKillActive) return;
-  const secsLeft = Math.ceil((autoKillExpiry-Date.now())/1000);
-  let row = 95;
-  if(rapidFireActive) row += 30;
-  if(shieldActive)    row += 30;
-  if(dmgBoostActive)  row += 30;
-  if(multiShotActive) row += 30;
-  ctx.shadowColor = '#00ffff';
-  ctx.shadowBlur  = 12;
-  ctx.fillStyle   = '#00ffff';
-  ctx.font        = 'bold 22px Arial';
-  ctx.fillText('☇ AUTO-KILL  '+secsLeft+'s', 20, row);
-  ctx.shadowBlur  = 0;
-}
-
 function drawScorePopups(){
 
 for(const p of scorePopups){
@@ -5868,7 +5846,7 @@ function gameLoop() {
     }
 
     // Clear screen
-    ctx.clearRect(0, 0, WIDTH, HEIGHT);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw background
     drawStars();
@@ -6407,6 +6385,56 @@ function clearHighScores(){
     });
     renderHighScores();
   }
+}
+
+// ── Full progress reset ───────────────────────────────────────
+function resetAllProgress(){
+  if(!confirm(
+    'RESET ALL PROGRESS?\n\n' +
+    'This will permanently delete:\n' +
+    '  • All high scores (every mode)\n' +
+    '  • All achievement progress\n' +
+    '  • All unlocked game modes\n\n' +
+    'This cannot be undone. Continue?'
+  )) return;
+
+  // 1. High scores — all modes
+  MODE_DEFS.forEach(def=>{
+    try{ localStorage.removeItem(def.hsKey); }catch(e){}
+  });
+  // Legacy key from older versions
+  try{ localStorage.removeItem('ssHighScores'); }catch(e){}
+
+  // 2. Achievements
+  try{ localStorage.removeItem('ssAchievements'); }catch(e){}
+
+  // 3. Mode unlock flags
+  MODE_DEFS.forEach(def=>{
+    if(def.unlockKey){
+      try{ localStorage.removeItem(def.unlockKey); }catch(e){}
+    }
+  });
+
+  // 4. Re-initialise achievement data in memory
+  achData = {};
+  ACH_DEFS.forEach(a=>{
+    achData[a.id] = { progress:0, unlocked:false, unlockedAt:null };
+  });
+  saveAchData(achData);
+  renderAchievements();
+
+  // 5. Re-render affected panels
+  renderHighScores();
+  renderModeGrid();
+
+  // 6. Toast confirmation
+  const toast = document.getElementById('achToast');
+  document.getElementById('achToastIcon').textContent = '🗑';
+  document.getElementById('achToastName').textContent = 'Progress Reset';
+  document.getElementById('achToastDesc').textContent = 'All scores, achievements and unlocks cleared.';
+  toast.classList.add('show');
+  clearTimeout(window._lockToastTimer);
+  window._lockToastTimer = setTimeout(()=>toast.classList.remove('show'), 3500);
 }
 
 // ── Render mode grid ──────────────────────────────────────────
