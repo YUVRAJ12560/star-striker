@@ -20,12 +20,4 @@ A modern HTML5 space shooter built with JavaScript and Canvas.
 
 ## Play Online
 
-https://YOUR_USERNAME.github.io/star-striker/
-
-## Screenshots
-
-(Add screenshots here)
-
-## License
-
-MIT
+https://yuvraj12560.github.io/star-striker/
