@@ -57,119 +57,136 @@ canvas{
     flex-direction:column;
     align-items:center;
     width:100%;
-    max-width:380px;
-    padding:0 16px;
+    max-width:460px;
+    padding:0 20px;
 }
 
 /* ── Title ── */
 .menu-title{
     text-align:center;
-    margin-bottom:6px;
-    animation:titleFloat 3s ease-in-out infinite;
+    margin-bottom:32px;
+    animation:titleFloat 3.5s ease-in-out infinite;
     user-select:none;
 }
 .menu-title .t1{
     display:block;
-    font-size:clamp(26px,4vw,48px);
+    font-size:clamp(48px,8vw,82px);
     font-weight:900;
-    letter-spacing:6px;
+    letter-spacing:8px;
     text-transform:uppercase;
-    background:linear-gradient(180deg,#ffffff 0%,#00e5ff 45%,#0044ff 100%);
+    line-height:1.0;
+    background:linear-gradient(160deg,#ffffff 0%,#00e5ff 40%,#007bff 100%);
     -webkit-background-clip:text;
     -webkit-text-fill-color:transparent;
     background-clip:text;
-    filter:drop-shadow(0 0 12px rgba(0,200,255,0.9));
+    filter:drop-shadow(0 0 22px rgba(0,180,255,0.85));
 }
 .menu-title .t2{
     display:block;
-    font-size:clamp(10px,1.2vw,14px);
-    letter-spacing:10px;
-    color:rgba(0,200,255,0.65);
-    margin-top:3px;
+    font-size:clamp(9px,1.1vw,13px);
+    letter-spacing:clamp(6px,1.5vw,14px);
+    color:rgba(0,210,255,0.55);
+    margin-top:8px;
     text-transform:uppercase;
+    font-weight:400;
+}
+.menu-title .t-divider{
+    display:block;
+    width:120px;
+    height:1px;
+    background:linear-gradient(90deg,transparent,rgba(0,200,255,0.5),transparent);
+    margin:10px auto 0;
 }
 @keyframes titleFloat{
     0%,100%{ transform:translateY(0); }
-    50%{ transform:translateY(-8px); }
+    50%{ transform:translateY(-10px); }
 }
 
 /* ── Buttons ── */
 .menu-buttons{
     display:flex;
     flex-direction:column;
-    gap:7px;
+    gap:9px;
     width:100%;
-    margin-top:12px;
 }
 
 .mbtn{
     position:relative;
     width:100%;
-    padding:11px 20px;
-    background:rgba(0,20,50,0.82);
-    border:1.5px solid rgba(0,200,255,0.45);
-    border-radius:7px;
-    color:#a8eeff;
-    font-size:clamp(12px,1.3vw,15px);
+    padding:13px 24px;
+    background:rgba(4,18,48,0.78);
+    border:1.5px solid rgba(0,180,255,0.28);
+    border-radius:10px;
+    color:rgba(170,225,255,0.88);
+    font-size:clamp(12px,1.3vw,14px);
     font-weight:700;
-    letter-spacing:2px;
+    letter-spacing:3px;
     text-transform:uppercase;
     cursor:pointer;
-    transition:background .18s,border-color .18s,color .18s,transform .12s,box-shadow .18s;
+    transition:background .2s,border-color .2s,color .2s,transform .13s,box-shadow .2s;
     overflow:hidden;
     text-align:center;
     outline:none;
     user-select:none;
     -webkit-tap-highlight-color:transparent;
+    backdrop-filter:blur(4px);
 }
+/* Shimmer sweep */
 .mbtn::before{
     content:'';
     position:absolute;
     inset:0;
-    background:linear-gradient(90deg,transparent,rgba(0,200,255,0.12),transparent);
-    transform:translateX(-100%);
+    background:linear-gradient(105deg,transparent 40%,rgba(0,200,255,0.1) 50%,transparent 60%);
+    transform:translateX(-120%);
     transition:transform 0s;
 }
 .mbtn:hover{
-    background:rgba(0,60,120,0.92);
-    border-color:rgba(0,230,255,0.9);
+    background:rgba(0,55,115,0.88);
+    border-color:rgba(0,220,255,0.75);
     color:#ffffff;
-    transform:translateY(-2px) scale(1.025);
-    box-shadow:0 0 22px rgba(0,200,255,0.55), inset 0 0 14px rgba(0,200,255,0.12);
+    transform:translateY(-2px);
+    box-shadow:0 6px 28px rgba(0,170,255,0.3), inset 0 0 20px rgba(0,180,255,0.07);
 }
 .mbtn:hover::before{
-    transform:translateX(100%);
-    transition:transform .55s ease;
+    transform:translateX(120%);
+    transition:transform .6s ease;
 }
 .mbtn:active{
-    transform:scale(0.97);
-    box-shadow:0 0 8px rgba(0,200,255,0.3);
+    transform:scale(0.975);
+    box-shadow:0 2px 10px rgba(0,180,255,0.25);
 }
 .mbtn .icon{
-    margin-right:10px;
-    font-size:1.1em;
+    margin-right:11px;
+    font-size:1.05em;
+    display:inline-block;
+    vertical-align:middle;
 }
+/* PLAY — accent primary */
 .mbtn.primary{
-    background:rgba(0,80,160,0.85);
-    border-color:rgba(0,220,255,0.8);
+    background:linear-gradient(135deg,rgba(0,90,200,0.85) 0%,rgba(0,55,140,0.9) 100%);
+    border-color:rgba(0,210,255,0.7);
     color:#ffffff;
-    font-size:clamp(13px,1.5vw,17px);
-    padding:14px 20px;
-    box-shadow:0 0 16px rgba(0,180,255,0.3);
+    font-size:clamp(14px,1.6vw,17px);
+    padding:16px 24px;
+    letter-spacing:4px;
+    box-shadow:0 0 24px rgba(0,160,255,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
 }
 .mbtn.primary:hover{
-    background:rgba(0,120,220,0.92);
-    box-shadow:0 0 38px rgba(0,200,255,0.75), inset 0 0 18px rgba(0,200,255,0.18);
+    background:linear-gradient(135deg,rgba(0,120,240,0.92) 0%,rgba(0,80,180,0.95) 100%);
+    box-shadow:0 8px 36px rgba(0,190,255,0.55), inset 0 0 20px rgba(0,200,255,0.12);
+    border-color:rgba(0,230,255,0.9);
 }
+/* EXIT — danger */
 .mbtn.danger{
-    border-color:rgba(255,80,80,0.5);
-    color:#ff9999;
+    background:rgba(28,4,4,0.75);
+    border-color:rgba(220,50,50,0.4);
+    color:rgba(255,140,140,0.9);
 }
 .mbtn.danger:hover{
-    background:rgba(120,0,0,0.85);
-    border-color:rgba(255,100,100,0.9);
+    background:rgba(110,0,0,0.82);
+    border-color:rgba(255,80,80,0.85);
     color:#fff;
-    box-shadow:0 0 22px rgba(255,80,80,0.55);
+    box-shadow:0 6px 24px rgba(220,0,0,0.4);
 }
 
 /* ── Sub-panels ── */
@@ -182,12 +199,23 @@ canvas{
     justify-content:center;
     background:rgba(0,5,18,0.94);
     backdrop-filter:blur(6px);
-    animation:panelIn .25s ease;
 }
-.sub-panel.open{ display:flex; }
+.sub-panel.open{
+    display:flex;
+    animation:panelIn .28s cubic-bezier(0.22,1,0.36,1) both;
+}
+.sub-panel.closing{
+    display:flex;
+    animation:panelOut .2s ease-in both;
+    pointer-events:none;
+}
 @keyframes panelIn{
-    from{ opacity:0; transform:scale(0.96); }
+    from{ opacity:0; transform:scale(0.95); }
     to{   opacity:1; transform:scale(1); }
+}
+@keyframes panelOut{
+    from{ opacity:1; transform:scale(1); }
+    to{   opacity:0; transform:scale(0.97); }
 }
 .panel-box{
     background:rgba(0,15,40,0.96);
@@ -227,8 +255,30 @@ canvas{
     opacity:.75;
 }
 .panel-back{
-    margin-top:24px;
-    width:100%;
+    margin-bottom:0;
+    width:auto;
+    align-self:flex-start;
+    padding:7px 16px !important;
+    font-size:clamp(11px,1.2vw,13px) !important;
+}
+/* Panel header row: back button + title side by side */
+.panel-header{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:22px;
+    flex-wrap:wrap;
+    position:sticky;
+    top:-36px;          /* offset matches panel-box padding */
+    z-index:2;
+    background:rgba(0,15,40,0.97);
+    padding:10px 0 8px;
+    margin-top:-10px;
+    border-bottom:1px solid rgba(0,200,255,0.1);
+}
+.panel-header h2{
+    margin-bottom:0 !important;
+    flex:1;
 }
 
 /* ── Mode cards ── */
@@ -605,7 +655,7 @@ canvas{
     position:absolute;
     bottom:14px;
     right:18px;
-    color:rgba(0,200,255,0.3);
+    color:rgba(0,200,255,0.22);
     font-size:11px;
     letter-spacing:2px;
     z-index:2;
@@ -615,22 +665,25 @@ canvas{
 /* ── Music toggle ── */
 .music-btn{
     position:absolute;
-    top:16px; right:18px;
+    top:18px; right:20px;
     z-index:4;
-    background:rgba(0,20,50,0.7);
-    border:1.5px solid rgba(0,200,255,0.35);
+    background:rgba(2,12,36,0.8);
+    border:1.5px solid rgba(0,180,255,0.3);
     border-radius:50%;
-    width:42px; height:42px;
+    width:44px; height:44px;
     display:flex; align-items:center; justify-content:center;
     cursor:pointer;
-    font-size:18px;
-    color:#a8eeff;
-    transition:all .18s;
+    font-size:19px;
+    color:rgba(160,220,255,0.8);
+    transition:all .2s;
+    backdrop-filter:blur(4px);
 }
 .music-btn:hover{
-    border-color:rgba(0,220,255,0.9);
-    background:rgba(0,60,120,0.85);
-    box-shadow:0 0 14px rgba(0,200,255,0.5);
+    border-color:rgba(0,220,255,0.85);
+    background:rgba(0,50,110,0.88);
+    color:#fff;
+    box-shadow:0 0 16px rgba(0,190,255,0.45);
+    transform:scale(1.08);
 }
 
 /* ═══════════════════════════════════════════
@@ -645,9 +698,16 @@ canvas{
     justify-content:center;
     background:rgba(0,0,12,0.88);
     backdrop-filter:blur(8px);
-    animation:panelIn .28s ease;
 }
-#shopOverlay.open{ display:flex; }
+#shopOverlay.open{
+    display:flex;
+    animation:panelIn .3s cubic-bezier(0.22,1,0.36,1) both;
+}
+#shopOverlay.closing{
+    display:flex;
+    animation:panelOut .2s ease-in both;
+    pointer-events:none;
+}
 
 #shopBox{
     background:rgba(2,8,28,0.97);
@@ -935,6 +995,732 @@ canvas{
     height:100%;
     border-radius:3px;
 }
+
+/* ═══════════════════════════════════════════
+   NEW SETTINGS OVERLAY  (full-screen tabbed)
+═══════════════════════════════════════════ */
+#settingsOverlay{
+    position:fixed;
+    inset:0;
+    z-index:500;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    background:rgba(0,2,14,0.92);
+    backdrop-filter:blur(10px);
+}
+#settingsOverlay.open{
+    display:flex;
+    animation:panelIn .3s cubic-bezier(0.22,1,0.36,1) both;
+}
+#settingsOverlay.closing{
+    display:flex;
+    animation:panelOut .22s ease-in both;
+    pointer-events:none;
+}
+
+#settingsShell{
+    display:flex;
+    flex-direction:column;
+    width:min(98vw,900px);
+    max-height:92vh;
+    background:rgba(2,8,28,0.98);
+    border:1.5px solid rgba(0,200,255,0.3);
+    border-radius:16px;
+    overflow:hidden;
+    box-shadow:0 0 80px rgba(0,120,255,0.25), inset 0 0 60px rgba(0,30,80,0.18);
+}
+
+/* ── Title bar ── */
+#settingsTitleBar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 24px 12px;
+    border-bottom:1px solid rgba(0,200,255,0.18);
+    background:rgba(0,10,35,0.85);
+    flex-shrink:0;
+}
+#settingsTitleBar .stb-title{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    color:#00e5ff;
+    font-size:clamp(15px,2vw,22px);
+    font-weight:900;
+    letter-spacing:6px;
+    text-transform:uppercase;
+    text-shadow:0 0 18px rgba(0,200,255,0.7);
+}
+#settingsTitleBar .stb-title svg{
+    width:22px;height:22px;
+    fill:none;stroke:#00e5ff;stroke-width:2;
+    filter:drop-shadow(0 0 5px #00e5ff);
+}
+#settingsCloseBtn{
+    width:36px;height:36px;
+    background:rgba(255,60,60,0.12);
+    border:1.5px solid rgba(255,80,80,0.45);
+    border-radius:8px;
+    color:#ff6666;
+    font-size:18px;
+    font-weight:900;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:background .15s,border-color .15s,color .15s,transform .1s;
+    outline:none;
+}
+#settingsCloseBtn:hover{
+    background:rgba(255,60,60,0.32);
+    border-color:#ff4444;
+    color:#fff;
+    transform:scale(1.08);
+}
+
+/* ── Body: sidebar + content ── */
+#settingsBody{
+    display:flex;
+    flex:1;
+    min-height:0;
+}
+
+/* ── Sidebar ── */
+#settingsSidebar{
+    width:clamp(130px,18vw,190px);
+    flex-shrink:0;
+    background:rgba(0,8,26,0.9);
+    border-right:1px solid rgba(0,200,255,0.12);
+    display:flex;
+    flex-direction:column;
+    padding:14px 0 18px;
+    gap:2px;
+    overflow-y:auto;
+    scrollbar-width:none;
+}
+#settingsSidebar::-webkit-scrollbar{ display:none; }
+
+.stab{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:11px 18px;
+    color:rgba(160,210,255,0.55);
+    font-size:clamp(10px,1.2vw,13px);
+    font-weight:700;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    cursor:pointer;
+    border:none;
+    background:transparent;
+    outline:none;
+    width:100%;
+    text-align:left;
+    border-left:3px solid transparent;
+    transition:color .18s,background .18s,border-color .18s;
+    user-select:none;
+    position:relative;
+}
+.stab svg{
+    width:18px;height:18px;
+    fill:none;stroke:currentColor;stroke-width:1.8;
+    flex-shrink:0;opacity:.7;
+    transition:opacity .18s;
+}
+.stab:hover{
+    color:rgba(160,210,255,0.9);
+    background:rgba(0,80,160,0.18);
+}
+.stab.active{
+    color:#ffffff;
+    background:rgba(0,100,200,0.25);
+    border-left-color:#00e5ff;
+    box-shadow:inset 0 0 14px rgba(0,120,255,0.1);
+}
+.stab.active svg{ opacity:1; }
+.stab .stab-arrow{
+    margin-left:auto;
+    font-size:10px;
+    opacity:.5;
+    display:none;
+}
+.stab.active .stab-arrow{ display:block; opacity:.8; }
+
+/* ship decoration at sidebar bottom */
+#sidebarShip{
+    margin-top:auto;
+    padding:16px 12px 0;
+    text-align:center;
+    font-size:48px;
+    opacity:.18;
+    pointer-events:none;
+    filter:drop-shadow(0 0 8px #0af);
+}
+
+/* ── Content pane ── */
+#settingsContent{
+    flex:1;
+    overflow-y:auto;
+    padding:22px 26px 20px;
+    scrollbar-width:thin;
+    scrollbar-color:rgba(0,200,255,0.3) transparent;
+}
+#settingsContent::-webkit-scrollbar{ width:5px; }
+#settingsContent::-webkit-scrollbar-thumb{ background:rgba(0,200,255,0.3);border-radius:4px; }
+
+.stab-pane{ display:none; }
+.stab-pane.active{ display:block; }
+
+/* ── Section card ── */
+.scard{
+    background:rgba(0,14,40,0.75);
+    border:1px solid rgba(0,200,255,0.15);
+    border-radius:12px;
+    padding:16px 20px 14px;
+    margin-bottom:16px;
+}
+.scard-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px;
+    flex-wrap:wrap;
+    gap:8px;
+}
+.scard-title{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    color:#00e5ff;
+    font-size:clamp(11px,1.3vw,14px);
+    font-weight:900;
+    letter-spacing:4px;
+    text-transform:uppercase;
+    text-shadow:0 0 10px rgba(0,200,255,0.5);
+}
+.scard-title svg{
+    width:17px;height:17px;
+    fill:none;stroke:#00e5ff;stroke-width:2;
+    filter:drop-shadow(0 0 4px #00e5ff);
+}
+
+/* ── Audio rows ── */
+.arow{
+    display:grid;
+    grid-template-columns:140px auto 1fr auto;
+    align-items:center;
+    gap:12px;
+    padding:8px 0;
+    border-bottom:1px solid rgba(0,200,255,0.07);
+}
+.arow:last-child{ border-bottom:none; }
+.arow-label{
+    color:rgba(190,230,255,0.85);
+    font-size:clamp(12px,1.3vw,14px);
+    white-space:nowrap;
+}
+.arow-vol-label{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    color:rgba(120,170,215,0.55);
+    font-size:10px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    white-space:nowrap;
+}
+.arow-vol-label svg{
+    width:12px;height:12px;
+    fill:none;stroke:currentColor;stroke-width:2;
+}
+.ns-slider{
+    -webkit-appearance:none;
+    appearance:none;
+    width:100%;
+    height:5px;
+    border-radius:3px;
+    background:rgba(0,80,140,0.55);
+    outline:none;
+    cursor:pointer;
+}
+.ns-slider::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:16px;height:16px;
+    border-radius:50%;
+    background:#00e5ff;
+    box-shadow:0 0 8px rgba(0,200,255,0.8),0 0 0 2px rgba(0,200,255,0.2);
+    cursor:pointer;
+    transition:transform .1s;
+}
+.ns-slider::-webkit-slider-thumb:hover{ transform:scale(1.15); }
+.ns-slider::-moz-range-thumb{
+    width:16px;height:16px;
+    border-radius:50%;
+    background:#00e5ff;
+    border:none;
+    cursor:pointer;
+}
+.arow-pct{
+    color:#00e5ff;
+    font-size:13px;
+    font-weight:700;
+    min-width:38px;
+    text-align:right;
+}
+/* toggle rows without sliders */
+.arow-simple{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:8px 0;
+    border-bottom:1px solid rgba(0,200,255,0.07);
+}
+.arow-simple:last-child{ border-bottom:none; }
+
+/* ── New toggle (used in redesigned settings) ── */
+.ns-toggle{
+    width:52px;height:28px;
+    background:rgba(0,30,70,0.9);
+    border:1.5px solid rgba(0,150,220,0.45);
+    border-radius:14px;
+    cursor:pointer;
+    position:relative;
+    transition:background .2s,border-color .2s,box-shadow .2s;
+    flex-shrink:0;
+}
+.ns-toggle.on{
+    background:rgba(0,130,220,0.45);
+    border-color:#00e5ff;
+    box-shadow:0 0 10px rgba(0,200,255,0.35);
+}
+.ns-toggle::after{
+    content:'';
+    position:absolute;
+    top:4px;left:4px;
+    width:18px;height:18px;
+    border-radius:50%;
+    background:#4a7a99;
+    transition:transform .2s,background .2s;
+}
+.ns-toggle.on::after{ transform:translateX(24px);background:#00e5ff; }
+.ns-toggle-label{
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:1.5px;
+    position:absolute;
+    top:50%;transform:translateY(-50%);
+    transition:opacity .2s;
+    pointer-events:none;
+}
+/* ON label shown right of knob when off */
+.ns-toggle-label.lbl-on{ right:6px; color:rgba(0,200,255,0.5); opacity:1; }
+.ns-toggle.on .ns-toggle-label.lbl-on{ opacity:0; }
+.ns-toggle-label.lbl-off{ left:6px; color:rgba(255,255,255,0.3); opacity:0; }
+.ns-toggle.on .ns-toggle-label.lbl-off{ opacity:0; }
+
+/* ── Controls two-column layout ── */
+.ctrl-cols{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+}
+@media(max-width:620px){
+    .ctrl-cols{ grid-template-columns:1fr; }
+}
+.ctrl-col-title{
+    color:#00e5ff;
+    font-size:10px;
+    font-weight:900;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    margin-bottom:10px;
+    opacity:.7;
+}
+.ns-bind-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:7px 0;
+    border-bottom:1px solid rgba(0,200,255,0.06);
+}
+.ns-bind-row:last-child{ border-bottom:none; }
+.ns-bind-label{
+    color:rgba(180,225,255,0.8);
+    font-size:clamp(11px,1.2vw,13px);
+}
+.ns-bind-label.highlight{ color:#ffcc00; }
+.ns-key-btn{
+    min-width:70px;
+    padding:5px 10px;
+    background:rgba(0,20,50,0.85);
+    border:1.5px solid rgba(0,150,220,0.45);
+    border-radius:6px;
+    color:#a8eeff;
+    font-size:clamp(10px,1.1vw,12px);
+    font-weight:700;
+    letter-spacing:1.5px;
+    text-align:center;
+    cursor:pointer;
+    transition:background .14s,border-color .14s,color .14s,box-shadow .14s;
+    outline:none;
+    white-space:nowrap;
+}
+.ns-key-btn:hover{
+    background:rgba(0,50,110,0.9);
+    border-color:rgba(0,220,255,0.8);
+    color:#fff;
+    box-shadow:0 0 10px rgba(0,200,255,0.35);
+}
+.ns-key-btn.listening{
+    background:rgba(0,90,30,0.7);
+    border-color:#00ff88;
+    color:#00ff88;
+    animation:ctrlPulse .55s ease-in-out infinite alternate;
+}
+.ns-key-btn.conflict{
+    border-color:#ff4444;
+    color:#ff8888;
+}
+/* Fire mode cards */
+.fire-card{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    padding:10px 12px;
+    background:rgba(0,18,50,0.7);
+    border:1.5px solid rgba(0,160,255,0.22);
+    border-radius:10px;
+    margin-bottom:8px;
+    cursor:pointer;
+    transition:border-color .17s,background .17s,box-shadow .17s;
+    user-select:none;
+}
+.fire-card:hover{ border-color:rgba(0,220,255,0.6);background:rgba(0,40,100,0.7); }
+.fire-card.active{
+    border-color:#00e5ff;
+    background:rgba(0,60,140,0.55);
+    box-shadow:0 0 18px rgba(0,200,255,0.3);
+}
+.fire-card-radio{
+    width:18px;height:18px;
+    border-radius:50%;
+    border:2px solid rgba(0,150,220,0.6);
+    flex-shrink:0;
+    margin-top:2px;
+    position:relative;
+    transition:border-color .17s;
+}
+.fire-card.active .fire-card-radio{ border-color:#00e5ff; }
+.fire-card-radio::after{
+    content:'';
+    position:absolute;
+    inset:3px;
+    border-radius:50%;
+    background:transparent;
+    transition:background .17s;
+}
+.fire-card.active .fire-card-radio::after{ background:#00e5ff; }
+.fire-card-icon{ font-size:22px; flex-shrink:0; }
+.fire-card-info{ flex:1; }
+.fire-card-name{
+    color:#ffffff;
+    font-size:clamp(11px,1.2vw,13px);
+    font-weight:800;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+}
+.fire-card-name span{ color:#ffcc00; }
+.fire-card-desc{
+    color:rgba(150,200,240,0.65);
+    font-size:clamp(10px,1.05vw,11px);
+    line-height:1.45;
+    margin-top:2px;
+}
+.rebind-btn{
+    width:100%;
+    padding:9px;
+    margin-top:12px;
+    background:rgba(0,40,90,0.7);
+    border:1.5px solid rgba(0,180,255,0.4);
+    border-radius:8px;
+    color:#a8eeff;
+    font-size:clamp(11px,1.2vw,13px);
+    font-weight:700;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    cursor:pointer;
+    text-align:center;
+    transition:background .15s,border-color .15s,color .15s;
+    outline:none;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.rebind-btn:hover{
+    background:rgba(0,70,160,0.85);
+    border-color:#00e5ff;
+    color:#fff;
+    box-shadow:0 0 14px rgba(0,200,255,0.35);
+}
+.ctrl-conflict-inline{
+    display:none;
+    color:#ff8888;
+    font-size:11px;
+    letter-spacing:1px;
+    margin-top:6px;
+    text-align:center;
+}
+.ctrl-conflict-inline.show{ display:block; }
+/* Fire mode info tip */
+.ctrl-tip{
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+    padding:8px 10px;
+    background:rgba(0,100,200,0.1);
+    border:1px solid rgba(0,150,255,0.2);
+    border-radius:7px;
+    margin-top:8px;
+}
+.ctrl-tip-icon{ color:#4aa8ff;font-size:14px;flex-shrink:0;margin-top:1px; }
+.ctrl-tip-text{ color:rgba(150,200,255,0.7);font-size:11px;line-height:1.5; }
+
+/* ── Gameplay rows ── */
+.gp-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px 14px;
+}
+@media(max-width:560px){ .gp-grid{ grid-template-columns:1fr; } }
+.gp-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:7px 6px;
+    border-bottom:1px solid rgba(0,200,255,0.06);
+    gap:8px;
+}
+.gp-label{
+    color:rgba(180,225,255,0.8);
+    font-size:clamp(11px,1.2vw,13px);
+}
+.gp-arrows{
+    display:flex;
+    align-items:center;
+    gap:5px;
+}
+.gp-arrow-btn{
+    width:22px;height:22px;
+    background:rgba(0,30,70,0.8);
+    border:1px solid rgba(0,160,220,0.4);
+    border-radius:4px;
+    color:#a0d8ff;
+    font-size:11px;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:background .12s,border-color .12s;
+    outline:none;
+}
+.gp-arrow-btn:hover{
+    background:rgba(0,60,130,0.85);
+    border-color:rgba(0,220,255,0.7);
+    color:#fff;
+}
+.gp-val{
+    min-width:36px;
+    text-align:center;
+    color:#00e5ff;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:1px;
+}
+
+/* ── Account / UI tab placeholder ── */
+.stab-placeholder{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:50px 20px;
+    color:rgba(100,160,220,0.4);
+    font-size:14px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    gap:14px;
+    text-align:center;
+}
+.stab-placeholder .ph-icon{ font-size:44px;opacity:.35; }
+
+/* ── Footer action bar ── */
+#settingsFooter{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:12px 24px;
+    border-top:1px solid rgba(0,200,255,0.13);
+    background:rgba(0,8,24,0.85);
+    flex-shrink:0;
+    flex-wrap:wrap;
+}
+.sftr-btn{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    padding:10px 22px;
+    border-radius:8px;
+    font-size:clamp(11px,1.3vw,13px);
+    font-weight:800;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    cursor:pointer;
+    outline:none;
+    border:none;
+    transition:background .15s,box-shadow .15s,transform .1s;
+    white-space:nowrap;
+}
+.sftr-btn:active{ transform:scale(0.97); }
+.sftr-btn.reset{
+    background:rgba(180,20,20,0.7);
+    border:1.5px solid rgba(255,60,60,0.55);
+    color:#ffaaaa;
+}
+.sftr-btn.reset:hover{
+    background:rgba(220,30,30,0.85);
+    box-shadow:0 0 20px rgba(255,50,50,0.4);
+    color:#fff;
+}
+.sftr-btn.back{
+    background:rgba(0,40,90,0.75);
+    border:1.5px solid rgba(0,160,220,0.5);
+    color:#a8d8ff;
+}
+.sftr-btn.back:hover{
+    background:rgba(0,70,140,0.85);
+    box-shadow:0 0 16px rgba(0,180,255,0.3);
+    color:#fff;
+}
+.sftr-btn.apply{
+    background:rgba(20,130,40,0.75);
+    border:1.5px solid rgba(60,200,80,0.55);
+    color:#aaffbb;
+}
+.sftr-btn.apply:hover{
+    background:rgba(30,170,55,0.88);
+    box-shadow:0 0 20px rgba(40,200,80,0.4);
+    color:#fff;
+}
+
+/* ═══════════════════════════════════════════
+   CONTROLS PANEL (legacy — kept for in-game overlay)
+═══════════════════════════════════════════ */
+.ctrl-section-title{
+    color:#00e5ff;
+    font-size:clamp(10px,1.1vw,12px);
+    letter-spacing:3px;
+    text-transform:uppercase;
+    margin:18px 0 8px;
+    opacity:.65;
+    padding-bottom:4px;
+    border-bottom:1px solid rgba(0,200,255,0.15);
+}
+.ctrl-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:9px 0;
+    border-bottom:1px solid rgba(0,200,255,0.07);
+    gap:12px;
+}
+.ctrl-label{
+    color:rgba(180,230,255,0.85);
+    font-size:clamp(12px,1.3vw,14px);
+    letter-spacing:.5px;
+    flex:1;
+}
+.ctrl-key-btn{
+    min-width:120px;
+    padding:7px 14px;
+    background:rgba(0,30,70,0.85);
+    border:1.5px solid rgba(0,180,255,0.45);
+    border-radius:7px;
+    color:#a8eeff;
+    font-size:clamp(11px,1.2vw,13px);
+    font-weight:700;
+    letter-spacing:1.5px;
+    text-align:center;
+    cursor:pointer;
+    transition:background .15s,border-color .15s,color .15s,box-shadow .15s;
+    outline:none;
+    user-select:none;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+.ctrl-key-btn:hover{
+    background:rgba(0,60,130,0.9);
+    border-color:rgba(0,220,255,0.85);
+    color:#fff;
+    box-shadow:0 0 14px rgba(0,200,255,0.4);
+}
+.ctrl-key-btn.listening{
+    background:rgba(0,100,30,0.75);
+    border-color:#00ff88;
+    color:#00ff88;
+    box-shadow:0 0 18px rgba(0,255,100,0.45);
+    animation:ctrlPulse .6s ease-in-out infinite alternate;
+}
+.ctrl-key-btn.conflict{
+    border-color:#ff4444;
+    color:#ff8888;
+    box-shadow:0 0 10px rgba(255,60,60,0.35);
+}
+@keyframes ctrlPulse{
+    from{ box-shadow:0 0 10px rgba(0,255,100,0.3); }
+    to  { box-shadow:0 0 24px rgba(0,255,100,0.6); }
+}
+/* Fire mode toggle row */
+.fire-mode-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 0 4px;
+    flex-wrap:wrap;
+}
+.fire-mode-btn{
+    flex:1;
+    min-width:110px;
+    padding:9px 10px;
+    background:rgba(0,20,50,0.8);
+    border:1.5px solid rgba(0,180,255,0.3);
+    border-radius:8px;
+    color:rgba(140,200,255,0.65);
+    font-size:clamp(11px,1.2vw,13px);
+    font-weight:700;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    cursor:pointer;
+    text-align:center;
+    transition:all .18s;
+    outline:none;
+}
+.fire-mode-btn.active{
+    background:rgba(0,80,160,0.88);
+    border-color:#00e5ff;
+    color:#ffffff;
+    box-shadow:0 0 18px rgba(0,200,255,0.45);
+}
+.fire-mode-btn:hover:not(.active){
+    background:rgba(0,40,90,0.8);
+    border-color:rgba(0,200,255,0.6);
+    color:#a8eeff;
+}
+.ctrl-conflict-msg{
+    display:none;
+    color:#ff8888;
+    font-size:11px;
+    letter-spacing:1px;
+    margin-top:4px;
+    text-align:center;
+}
+.ctrl-conflict-msg.show{ display:block; }
 </style>
 
 </head>
@@ -951,8 +1737,10 @@ canvas{
   <div id="menuContent">
     <!-- Title -->
     <div class="menu-title">
-      <span class="t1">STAR STRIKER</span>
+      <span class="t1">STAR</span>
+      <span class="t1">STRIKER</span>
       <span class="t2">Defend the Galaxy</span>
+      <span class="t-divider"></span>
     </div>
 
     <!-- Main buttons -->
@@ -971,7 +1759,10 @@ canvas{
   <!-- ── SHIP SELECTION PANEL ── -->
   <div class="sub-panel" id="panelShipSelect">
     <div class="panel-box" style="max-width:720px">
-      <h2>🚀 Choose Your Ship</h2>
+      <div class="panel-header">
+        <button class="mbtn panel-back" onclick="closeShipSelect()">← Back</button>
+        <h2>🚀 Choose Your Ship</h2>
+      </div>
       <div class="ship-grid" id="shipGrid"><!-- populated by JS --></div>
       <button class="mbtn primary" id="btnShipConfirm" style="margin-top:6px" onclick="confirmShipAndPlay()">
         <span class="icon">▶</span> Launch
@@ -982,83 +1773,27 @@ canvas{
   <!-- ── GAME MODES PANEL ── -->
   <div class="sub-panel" id="panelModes">
     <div class="panel-box" style="max-width:760px">
-      <h2>⚡ Game Modes</h2>
+      <div class="panel-header">
+        <button class="mbtn panel-back" onclick="closePanel('panelModes')">← Back</button>
+        <h2>⚡ Game Modes</h2>
+      </div>
       <div class="mode-grid" id="modeGrid"><!-- populated by JS --></div>
-      <button class="mbtn panel-back" onclick="closePanel('panelModes')">← Back</button>
     </div>
   </div>
 
-  <!-- ── SETTINGS PANEL ── -->
-  <div class="sub-panel" id="panelSettings">
-    <div class="panel-box">
-      <h2>⚙ Settings</h2>
-      <div class="setting-row">
-        <span class="setting-label">Music</span>
-        <div class="setting-control">
-          <div class="toggle on" id="toggleMusic" onclick="toggleSetting('music',this)"></div>
-        </div>
-      </div>
-      <div class="setting-row">
-        <span class="setting-label">Music Volume</span>
-        <div class="setting-control">
-          <input type="range" class="vol-slider" id="sliderMusicVol" min="0" max="100" value="40"
-            oninput="setMusicVolume(this.value)">
-          <span id="lblMusicVol" style="color:#00e5ff;font-size:13px;min-width:32px">40%</span>
-        </div>
-      </div>
-      <div class="setting-row">
-        <span class="setting-label">Sound Effects</span>
-        <div class="setting-control">
-          <div class="toggle on" id="toggleSFX" onclick="toggleSetting('sfx',this)"></div>
-        </div>
-      </div>
-      <div class="setting-row">
-        <span class="setting-label">SFX Volume</span>
-        <div class="setting-control">
-          <input type="range" class="vol-slider" id="sliderSFXVol" min="0" max="100" value="70"
-            oninput="setSFXVolume(this.value)">
-          <span id="lblSFXVol" style="color:#00e5ff;font-size:13px;min-width:32px">70%</span>
-        </div>
-      </div>
-      <div class="setting-row">
-        <span class="setting-label">Screen Shake</span>
-        <div class="setting-control">
-          <div class="toggle on" id="toggleShake" onclick="toggleSetting('shake',this)"></div>
-        </div>
-      </div>
-      <div class="setting-row">
-        <span class="setting-label">Particle Effects</span>
-        <div class="setting-control">
-          <div class="toggle on" id="toggleParticles" onclick="toggleSetting('particles',this)"></div>
-        </div>
-      </div>
-
-      <!-- Divider -->
-      <div style="border-top:1px solid rgba(255,80,80,0.2);margin:18px 0 14px;"></div>
-
-      <!-- Reset section -->
-      <div style="margin-bottom:8px">
-        <div style="color:rgba(255,120,120,0.8);font-size:clamp(11px,1.2vw,13px);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">⚠ Danger Zone</div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <button class="mbtn danger" style="text-align:left;font-size:clamp(11px,1.2vw,13px)" onclick="resetAllProgress()">
-            🗑 Reset All Progress
-            <span style="display:block;font-size:10px;letter-spacing:1px;color:rgba(255,160,160,0.6);margin-top:2px;font-weight:400">Clears achievements, high scores &amp; unlocks</span>
-          </button>
-        </div>
-      </div>
-
-      <button class="mbtn panel-back" onclick="closePanel('panelSettings')">← Back</button>
-    </div>
-  </div>
+  <!-- ── SETTINGS PANEL (replaced by #settingsOverlay below) — kept as empty stub so IDs still exist ── -->
+  <div class="sub-panel" id="panelSettings" style="display:none!important"></div>
 
   <!-- ── HIGH SCORES PANEL ── -->
   <div class="sub-panel" id="panelHighScores">
     <div class="panel-box">
-      <h2>🏆 High Scores</h2>
+      <div class="panel-header">
+        <button class="mbtn panel-back" onclick="closePanel('panelHighScores')">← Back</button>
+        <h2>🏆 High Scores</h2>
+      </div>
       <div id="hsContent"></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+      <div style="margin-top:10px">
         <button class="mbtn danger hs-clear" onclick="clearHighScores()">🗑 Clear Scores</button>
-        <button class="mbtn panel-back" style="width:auto;padding:10px 20px;margin:0" onclick="closePanel('panelHighScores')">← Back</button>
       </div>
     </div>
   </div>
@@ -1066,7 +1801,10 @@ canvas{
   <!-- ── HOW TO PLAY PANEL ── -->
   <div class="sub-panel" id="panelHowTo">
     <div class="panel-box">
-      <h2>❓ How to Play</h2>
+      <div class="panel-header">
+        <button class="mbtn panel-back" onclick="closePanel('panelHowTo')">← Back</button>
+        <h2>❓ How to Play</h2>
+      </div>
       <p class="section-title">Movement</p>
       <p>Use <strong style="color:#00e5ff">Arrow Keys</strong> to move your ship in all directions.</p>
       <p>Your ship fires automatically — just survive and aim!</p>
@@ -1083,20 +1821,23 @@ canvas{
         <li><strong style="color:#00ffff">☇ Auto-Kill</strong> — ship auto-zaps every enemy for 6 seconds</li>
       </ul>
       <p class="section-title">Controls</p>
-      <ul>
+      <ul id="howToControlsList">
+        <li><strong style="color:#00e5ff">Arrow Keys</strong> — Move your ship</li>
         <li><strong style="color:#00e5ff">Esc</strong> — Pause / Resume</li>
         <li><strong style="color:#00e5ff">R</strong> — Restart (on Game Over screen)</li>
       </ul>
       <p class="section-title">Scoring</p>
       <p>+10 per regular enemy · +100×level for boss kills · +100 per coin</p>
-      <button class="mbtn panel-back" onclick="closePanel('panelHowTo')">← Back</button>
     </div>
   </div>
 
   <!-- ── CREDITS PANEL ── -->
   <div class="sub-panel" id="panelCredits">
     <div class="panel-box">
-      <h2>✦ Credits</h2>
+      <div class="panel-header">
+        <button class="mbtn panel-back" onclick="closePanel('panelCredits')">← Back</button>
+        <h2>✦ Credits</h2>
+      </div>
       <div class="credit-block">
         <div class="role">Game Design &amp; Development</div>
         <div class="name">Yuvraj</div>
@@ -1120,16 +1861,32 @@ canvas{
       <p style="text-align:center;color:rgba(120,180,220,0.55);font-size:13px;margin-top:4px">
         © 2026 Star Striker. All rights reserved.
       </p>
-      <button class="mbtn panel-back" onclick="closePanel('panelCredits')">← Back</button>
     </div>
   </div>
 
   <!-- ── ACHIEVEMENTS PANEL ── -->
   <div class="sub-panel" id="panelAchievements">
     <div class="panel-box">
-      <h2>🎖 Achievements</h2>
+      <div class="panel-header">
+        <button class="mbtn panel-back" onclick="closePanel('panelAchievements')">← Back</button>
+        <h2>🎖 Achievements</h2>
+      </div>
       <div class="ach-grid" id="achGrid"></div>
-      <button class="mbtn panel-back" onclick="closePanel('panelAchievements')">← Back</button>
+    </div>
+  </div>
+
+  <!-- ── CONTROLS PANEL ── -->
+  <div class="sub-panel" id="panelControls">
+    <div class="panel-box" style="max-width:560px">
+      <div class="panel-header">
+        <button class="mbtn panel-back" onclick="closePanel('panelControls')">← Back</button>
+        <h2>🎮 Controls</h2>
+      </div>
+      <div id="controlsPanelBody"><!-- populated by renderControlsPanel() --></div>
+      <div class="ctrl-conflict-msg" id="ctrlConflictMsg">⚠ That key is already assigned to another action</div>
+      <div style="margin-top:20px">
+        <button class="mbtn danger" style="width:100%;font-size:clamp(11px,1.2vw,13px)" onclick="resetControlsToDefault()">↺ Reset Defaults</button>
+      </div>
     </div>
   </div>
 
@@ -1176,7 +1933,309 @@ canvas{
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════
+     IN-GAME CONTROLS OVERLAY (accessible from pause menu)
+═══════════════════════════════════════════ -->
+<div id="inGameControlsOverlay" style="
+  display:none;position:fixed;inset:0;z-index:300;
+  align-items:center;justify-content:center;
+  background:rgba(0,0,12,0.92);backdrop-filter:blur(8px);
+  animation:panelIn .25s ease;">
+  <div style="
+    background:rgba(2,8,28,0.97);border:2px solid rgba(0,200,255,0.45);
+    border-radius:18px;padding:30px 36px 28px;
+    width:min(96vw,560px);max-height:90vh;overflow-y:auto;
+    box-shadow:0 0 60px rgba(0,150,255,0.25);
+    scrollbar-width:thin;scrollbar-color:rgba(0,200,255,0.3) transparent;">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap">
+      <button class="mbtn" style="padding:7px 16px;font-size:clamp(11px,1.2vw,13px);white-space:nowrap" onclick="closeInGameControls()">← Back</button>
+      <h2 style="color:#00e5ff;font-size:clamp(18px,2.5vw,26px);font-weight:900;letter-spacing:5px;text-transform:uppercase;text-shadow:0 0 14px rgba(0,200,255,0.7);margin:0;flex:1">🎮 Controls</h2>
+    </div>
+    <div id="inGameControlsPanelBody"><!-- populated by renderControlsPanel() --></div>
+    <div class="ctrl-conflict-msg" id="inGameCtrlConflictMsg">⚠ That key is already assigned to another action</div>
+    <div style="margin-top:20px">
+      <button class="mbtn danger" style="width:100%;font-size:clamp(11px,1.2vw,13px)" onclick="resetControlsToDefault()">↺ Reset Defaults</button>
+    </div>
+  </div>
+</div>
+
 <canvas id="gameCanvas"></canvas>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     NEW SETTINGS OVERLAY
+═══════════════════════════════════════════════════════════════ -->
+<div id="settingsOverlay">
+  <div id="settingsShell">
+
+    <!-- Title Bar -->
+    <div id="settingsTitleBar">
+      <div class="stb-title">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        SETTINGS
+      </div>
+      <button id="settingsCloseBtn" onclick="closeSettingsOverlay()" title="Close">✕</button>
+    </div>
+
+    <!-- Body -->
+    <div id="settingsBody">
+
+      <!-- Sidebar -->
+      <div id="settingsSidebar">
+        <button class="stab active" data-tab="audio" onclick="switchSettingsTab('audio',this)">
+          <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          Audio
+          <span class="stab-arrow">›</span>
+        </button>
+        <button class="stab" data-tab="video" onclick="switchSettingsTab('video',this)">
+          <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          Video
+          <span class="stab-arrow">›</span>
+        </button>
+        <button class="stab" data-tab="controls" onclick="switchSettingsTab('controls',this)">
+          <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="8" cy="12" r="2"/><line x1="14" y1="10" x2="14" y2="10"/><line x1="16" y1="12" x2="16" y2="12"/><line x1="14" y1="14" x2="14" y2="14"/><line x1="12" y1="12" x2="12" y2="12"/></svg>
+          Controls
+          <span class="stab-arrow">›</span>
+        </button>
+        <button class="stab" data-tab="gameplay" onclick="switchSettingsTab('gameplay',this)">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Gameplay
+          <span class="stab-arrow">›</span>
+        </button>
+        <button class="stab" data-tab="uihud" onclick="switchSettingsTab('uihud',this)">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+          UI / HUD
+          <span class="stab-arrow">›</span>
+        </button>
+        <button class="stab" data-tab="account" onclick="switchSettingsTab('account',this)">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Account
+          <span class="stab-arrow">›</span>
+        </button>
+        <div id="sidebarShip">🚀</div>
+      </div>
+
+      <!-- Content panes -->
+      <div id="settingsContent">
+
+        <!-- ══ AUDIO ══ -->
+        <div class="stab-pane active" id="spane-audio">
+          <div class="scard">
+            <div class="scard-header">
+              <div class="scard-title">
+                <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                AUDIO
+              </div>
+            </div>
+            <!-- Music -->
+            <div class="arow">
+              <span class="arow-label">Music</span>
+              <div class="ns-toggle on" id="nsToggleMusic" onclick="nsToggle('music',this)" style="cursor:pointer">
+                <span class="ns-toggle-label lbl-on" style="font-size:9px;right:5px;position:absolute;top:50%;transform:translateY(-50%);color:rgba(0,200,255,0.7);letter-spacing:1px;pointer-events:none">ON</span>
+              </div>
+              <div class="arow-vol-label">
+                <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                VOLUME
+              </div>
+              <input type="range" class="ns-slider" id="nsMusicSlider" min="0" max="100" value="40" oninput="nsSetMusicVol(this.value)" style="width:140px">
+              <span class="arow-pct" id="nsMusicPct">40%</span>
+            </div>
+            <!-- SFX -->
+            <div class="arow">
+              <span class="arow-label">Sound Effects</span>
+              <div class="ns-toggle on" id="nsToggleSFX" onclick="nsToggle('sfx',this)" style="cursor:pointer">
+                <span class="ns-toggle-label lbl-on" style="font-size:9px;right:5px;position:absolute;top:50%;transform:translateY(-50%);color:rgba(0,200,255,0.7);letter-spacing:1px;pointer-events:none">ON</span>
+              </div>
+              <div class="arow-vol-label">
+                <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                VOLUME
+              </div>
+              <input type="range" class="ns-slider" id="nsSFXSlider" min="0" max="100" value="70" oninput="nsSetSFXVol(this.value)" style="width:140px">
+              <span class="arow-pct" id="nsSFXPct">70%</span>
+            </div>
+            <!-- Screen Shake -->
+            <div class="arow-simple">
+              <span class="arow-label">Screen Shake</span>
+              <div class="ns-toggle on" id="nsToggleShake" onclick="nsToggle('shake',this)" style="cursor:pointer">
+                <span class="ns-toggle-label lbl-on" style="font-size:9px;right:5px;position:absolute;top:50%;transform:translateY(-50%);color:rgba(0,200,255,0.7);letter-spacing:1px;pointer-events:none">ON</span>
+              </div>
+            </div>
+            <!-- Particle Effects -->
+            <div class="arow-simple">
+              <span class="arow-label">Particle Effects</span>
+              <div class="ns-toggle on" id="nsToggleParticles" onclick="nsToggle('particles',this)" style="cursor:pointer">
+                <span class="ns-toggle-label lbl-on" style="font-size:9px;right:5px;position:absolute;top:50%;transform:translateY(-50%);color:rgba(0,200,255,0.7);letter-spacing:1px;pointer-events:none">ON</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ VIDEO ══ -->
+        <div class="stab-pane" id="spane-video">
+          <div class="scard">
+            <div class="scard-header">
+              <div class="scard-title">
+                <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                VIDEO
+              </div>
+            </div>
+            <div class="arow-simple">
+              <span class="arow-label">Slow-Mo Effects</span>
+              <div class="ns-toggle on" id="nsToggleSlowmo" onclick="nsToggle('slowmo',this)" style="cursor:pointer">
+                <span class="ns-toggle-label lbl-on" style="font-size:9px;right:5px;position:absolute;top:50%;transform:translateY(-50%);color:rgba(0,200,255,0.7);letter-spacing:1px;pointer-events:none">ON</span>
+              </div>
+            </div>
+            <div class="arow-simple">
+              <span class="arow-label">Hit Flash</span>
+              <div class="ns-toggle on" id="nsToggleHitFlash" onclick="nsToggle('hitflash',this)" style="cursor:pointer">
+                <span class="ns-toggle-label lbl-on" style="font-size:9px;right:5px;position:absolute;top:50%;transform:translateY(-50%);color:rgba(0,200,255,0.7);letter-spacing:1px;pointer-events:none">ON</span>
+              </div>
+            </div>
+            <div class="arow-simple">
+              <span class="arow-label">Star Field</span>
+              <div class="ns-toggle on" id="nsToggleStars" onclick="nsToggle('stars',this)" style="cursor:pointer">
+                <span class="ns-toggle-label lbl-on" style="font-size:9px;right:5px;position:absolute;top:50%;transform:translateY(-50%);color:rgba(0,200,255,0.7);letter-spacing:1px;pointer-events:none">ON</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ CONTROLS ══ -->
+        <div class="stab-pane" id="spane-controls">
+          <div class="scard">
+            <div class="scard-header">
+              <div class="scard-title">
+                <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/></svg>
+                CONTROLS
+              </div>
+              <button class="sftr-btn back" style="padding:6px 14px;font-size:11px" onclick="resetControlsToDefault()">
+                <span>↺</span> RESET TO DEFAULT
+              </button>
+            </div>
+            <div class="ctrl-cols">
+              <!-- Left: key bindings -->
+              <div>
+                <div class="ctrl-col-title">⌨ KEYBOARD LAYOUT</div>
+                <div id="nsBindRows"><!-- populated by JS --></div>
+                <div class="ctrl-conflict-inline" id="nsCtrlConflict">⚠ Key already in use</div>
+              </div>
+              <!-- Right: fire mode -->
+              <div>
+                <div class="ctrl-col-title">🎯 AIM &amp; FIRE MODE</div>
+                <div class="fire-card active" id="nsFireAuto" onclick="nsSetFireMode('auto')">
+                  <div class="fire-card-radio"></div>
+                  <div class="fire-card-icon">🎯</div>
+                  <div class="fire-card-info">
+                    <div class="fire-card-name">AUTO FIRE <span>(HOLD AIM)</span></div>
+                    <div class="fire-card-desc">Bullets fire automatically while moving.</div>
+                  </div>
+                </div>
+                <div class="fire-card" id="nsFireManual" onclick="nsSetFireMode('manual')">
+                  <div class="fire-card-radio"></div>
+                  <div class="fire-card-icon">🚀</div>
+                  <div class="fire-card-info">
+                    <div class="fire-card-name">MANUAL FIRE <span>(PRESS FIRE)</span></div>
+                    <div class="fire-card-desc">Hold the Shoot key to fire.</div>
+                  </div>
+                </div>
+                <div class="ctrl-tip">
+                  <span class="ctrl-tip-icon">ℹ</span>
+                  <span class="ctrl-tip-text">You can also change fire mode during gameplay in the Pause Menu.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ GAMEPLAY ══ -->
+        <div class="stab-pane" id="spane-gameplay">
+          <div class="scard">
+            <div class="scard-header">
+              <div class="scard-title">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                GAMEPLAY
+              </div>
+            </div>
+            <div class="gp-grid" id="gpGrid"><!-- populated by JS --></div>
+          </div>
+        </div>
+
+        <!-- ══ UI / HUD ══ -->
+        <div class="stab-pane" id="spane-uihud">
+          <div class="scard">
+            <div class="scard-header">
+              <div class="scard-title">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                UI / HUD
+              </div>
+            </div>
+            <div class="arow-simple">
+              <span class="arow-label">Damage Numbers</span>
+              <div class="ns-toggle on" id="nsToggleDmgNums" onclick="nsToggle('dmgnums',this)" style="cursor:pointer">
+                <span class="ns-toggle-label lbl-on" style="font-size:9px;right:5px;position:absolute;top:50%;transform:translateY(-50%);color:rgba(0,200,255,0.7);letter-spacing:1px;pointer-events:none">ON</span>
+              </div>
+            </div>
+            <div class="arow-simple">
+              <span class="arow-label">Combo Popups</span>
+              <div class="ns-toggle on" id="nsToggleComboPop" onclick="nsToggle('combopop',this)" style="cursor:pointer">
+                <span class="ns-toggle-label lbl-on" style="font-size:9px;right:5px;position:absolute;top:50%;transform:translateY(-50%);color:rgba(0,200,255,0.7);letter-spacing:1px;pointer-events:none">ON</span>
+              </div>
+            </div>
+            <div class="arow-simple">
+              <span class="arow-label">Wave Progress Bar</span>
+              <div class="ns-toggle on" id="nsToggleWaveBar" onclick="nsToggle('wavebar',this)" style="cursor:pointer">
+                <span class="ns-toggle-label lbl-on" style="font-size:9px;right:5px;position:absolute;top:50%;transform:translateY(-50%);color:rgba(0,200,255,0.7);letter-spacing:1px;pointer-events:none">ON</span>
+              </div>
+            </div>
+            <div class="arow-simple">
+              <span class="arow-label">Boss Health Bar</span>
+              <div class="ns-toggle on" id="nsToggleBossBar" onclick="nsToggle('bossbar',this)" style="cursor:pointer">
+                <span class="ns-toggle-label lbl-on" style="font-size:9px;right:5px;position:absolute;top:50%;transform:translateY(-50%);color:rgba(0,200,255,0.7);letter-spacing:1px;pointer-events:none">ON</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ ACCOUNT ══ -->
+        <div class="stab-pane" id="spane-account">
+          <div class="scard">
+            <div class="scard-header">
+              <div class="scard-title">
+                <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                ACCOUNT
+              </div>
+            </div>
+            <div style="color:rgba(130,180,230,0.6);font-size:13px;line-height:1.7;margin-bottom:14px">
+              Your progress is stored locally in this browser.
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button class="sftr-btn reset" style="justify-content:flex-start;width:100%" onclick="resetAllProgress()">
+                <span>🗑</span> RESET ALL PROGRESS
+                <span style="font-size:10px;opacity:.6;font-weight:400;margin-left:6px">scores · achievements · unlocks</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /settingsContent -->
+    </div><!-- /settingsBody -->
+
+    <!-- Footer -->
+    <div id="settingsFooter">
+      <button class="sftr-btn reset" onclick="nsResetAll()">
+        <span>↺</span> RESET ALL
+      </button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="sftr-btn back" onclick="closeSettingsOverlay()">
+          <span>←</span> BACK
+        </button>
+        <button class="sftr-btn apply" onclick="nsApply()">
+          <span>✓</span> APPLY
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /settingsShell -->
+</div><!-- /settingsOverlay -->
 
 <script>
 
@@ -1187,13 +2246,9 @@ const ctx = canvas.getContext('2d');
 canvas.width  = window.innerWidth;
 canvas.height = window.innerHeight;
 
-// Use getters so WIDTH/HEIGHT always reflect the current canvas size
-// even after window resize events
-function getWidth()  { return canvas.width;  }
-function getHeight() { return canvas.height; }
-
-const WIDTH  = canvas.width;
-const HEIGHT = canvas.height;
+// WIDTH/HEIGHT are live getters — always reflect current canvas size after resize
+Object.defineProperty(window,'WIDTH', { get(){ return canvas.width;  }, configurable:true });
+Object.defineProperty(window,'HEIGHT',{ get(){ return canvas.height; }, configurable:true });
 
 let score=0;
 let lives=3;
@@ -1201,6 +2256,7 @@ let coins=0;       // spendable currency (separate from score)
 let gameOver=false;
 let paused=false;
 let _frameCount=0; // increments every game loop tick for throttling
+let _gameLoopLastTs=0; // rAF timestamp of last game loop tick — used for delta time
 
 //=========================
 // WAVE-BASED LEVEL SYSTEM
@@ -1230,7 +2286,7 @@ let waveKilled=0;    // kills by player this wave
 // "fighting"  → boss is alive and active
 // "defeated"  → "BOSS DEFEATED!" shown for 2.5s, then level increments
 let bossPhase="wave";
-let bossPhaseTimer=0;
+let bossPhaseTimer=Date.now(); // initialised to now so timer-based checks never fire immediately
 const BOSS_WARNING_DUR=2500;
 const BOSS_DEFEATED_DUR=2500;
 
@@ -1717,6 +2773,8 @@ function applyModeRules(){
     bossRushPhase = 0;
     bossPhase = 'warning';
     bossPhaseTimer = Date.now();
+    // Warning sound will play naturally from the updateBoss transition
+    // (no sound here since audio context may not be ready yet)
   }
 
   if(m === 'nightmare'){
@@ -1749,6 +2807,10 @@ function handleBossRushNextBoss(){
   bossRushPhase++;
   bossPhase   = 'warning';
   bossPhaseTimer = Date.now();
+  boss = null;
+  bossBullets.length = 0;
+  // Small delay so audio context is active before playing
+  try{ playBossWarningSound(); }catch(e){}
   return true;
 }
 
@@ -2013,12 +3075,20 @@ function openShop(){
   document.getElementById('shopLevelLabel').textContent = level - 1;
   document.getElementById('shopNextLabel').textContent  = level;
   renderShop();
-  document.getElementById('shopOverlay').classList.add('open');
+  const overlay = document.getElementById('shopOverlay');
+  overlay.classList.remove('closing');
+  overlay.classList.add('open');
 }
 
 function closeShop(){
   shopOpen = false;
-  document.getElementById('shopOverlay').classList.remove('open');
+  const overlay = document.getElementById('shopOverlay');
+  overlay.classList.add('closing');
+  overlay.classList.remove('open');
+  const _shopCleanup = ()=>{ overlay.classList.remove('closing'); };
+  const _shopOnEnd = ()=>{ _shopCleanup(); overlay.removeEventListener('animationend', _shopOnEnd); clearTimeout(_shopFallback); };
+  const _shopFallback = setTimeout(_shopCleanup, 350);
+  overlay.addEventListener('animationend', _shopOnEnd);
 
   // Push all timers forward by the time the shop was open,
   // so nothing triggers immediately when the game resumes.
@@ -2032,6 +3102,7 @@ function closeShop(){
   lastCoinPowerup      += gap;
   lastAutoKillPowerup  += gap;
   bossPhaseTimer       += gap;
+  lastShot             += gap;  // prevent instant burst-fire on shop close
   if(rapidFireActive)  rapidFireExpiry  += gap;
   if(shieldActive)     shieldExpiry     += gap;
   if(dmgBoostActive)   dmgBoostExpiry   += gap;
@@ -2128,10 +3199,9 @@ let shakeIntensity=0;      // current magnitude (px)
 let shakeDuration=0;       // frames remaining
 
 function triggerShake(intensity, duration){
-  if(intensity>shakeIntensity){
-    shakeIntensity=intensity;
-    shakeDuration=duration;
-  }
+  // Take the stronger intensity AND the longer duration independently
+  if(intensity > shakeIntensity){ shakeIntensity = intensity; }
+  if(duration  > shakeDuration)  { shakeDuration  = duration;  }
 }
 
 function applyShake(){
@@ -2151,6 +3221,8 @@ const SLOW_MO_DURATION=1800; // ms total
 const SLOW_MO_SCALE=0.25;    // game speed during slow-mo
 
 function triggerSlowMo(){
+  // Don't reset if already active — let it extend only if nearly done
+  if(slowMoActive && slowMoTimer > SLOW_MO_DURATION * 0.3) return;
   slowMoActive=true;
   slowMoTimer=SLOW_MO_DURATION;
   slowMoScale=SLOW_MO_SCALE;
@@ -2282,6 +3354,8 @@ if(waveKilled>=waveSize(level)){
 bossPhase="warning";
 bossPhaseTimer=Date.now();
 enemies.length=0;
+bossBullets.length=0;  // clear any stray boss bullets from previous fight
+playBossWarningSound(); // play warning sound at the START of the warning phase
 }
 }
 
@@ -2289,20 +3363,28 @@ const keys={};
 
 document.addEventListener("keydown",(e)=>{
 
-// Prevent arrow keys / space from scrolling the page
-if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," ","Escape"].includes(e.key)){
+// Null-safe overlay guards — use optional chaining
+const ctrlEl = document.getElementById('inGameControlsOverlay');
+if(ctrlEl && ctrlEl.style.display==='flex') return;
+
+const settEl = document.getElementById('settingsOverlay');
+if(settEl && settEl.classList.contains('open')) return;
+
+// Prevent bound movement/action keys and space from scrolling the page
+const boundKeys = Object.values(keyBindings);
+if(boundKeys.includes(e.key) || e.key===' '){
 e.preventDefault();
 }
 
 keys[e.key]=true;
 
-if(gameOver && (e.key=="r" || e.key=="R")){
+if(gameOver && isAction(e,'restart')){
 restartGame();
 return;
 }
 
 // Toggle pause — only while game is actively running
-if(!gameOver && e.key==="Escape"){
+if(!gameOver && isAction(e,'pause')){
 paused=!paused;
 // When unpausing, push all timers forward by the time we were frozen
 // so nothing "jumps" due to elapsed time during pause
@@ -2487,7 +3569,7 @@ const ph = player.height;
 const ship = selectedShip;
 
 // Determine if moving for enhanced effects
-const isMoving = keys["ArrowLeft"]||keys["ArrowRight"]||keys["ArrowUp"]||keys["ArrowDown"];
+const isMoving = keys[keyBindings.moveLeft]||keys[keyBindings.moveRight]||keys[keyBindings.moveUp]||keys[keyBindings.moveDown];
 
 // ── Apply tilt transform around ship centre ────────────────
 ctx.save();
@@ -2713,17 +3795,17 @@ ctx.restore();
 
 }
 
-function movePlayer(){
+function movePlayer(dt=1){
 
-const movingLeft  = keys["ArrowLeft"]  && player.x > 0;
-const movingRight = keys["ArrowRight"] && player.x < WIDTH - player.width;
-const movingUp    = keys["ArrowUp"]    && player.y > 0;
-const movingDown  = keys["ArrowDown"]  && player.y < HEIGHT - player.height;
+const movingLeft  = keys[keyBindings.moveLeft]  && player.x > 0;
+const movingRight = keys[keyBindings.moveRight] && player.x < WIDTH - player.width;
+const movingUp    = keys[keyBindings.moveUp]    && player.y > 0;
+const movingDown  = keys[keyBindings.moveDown]  && player.y < HEIGHT - player.height;
 
-if(movingLeft)  player.x -= player.speed;
-if(movingRight) player.x += player.speed;
-if(movingUp)    player.y -= player.speed;
-if(movingDown)  player.y += player.speed;
+if(movingLeft)  player.x -= player.speed * dt;
+if(movingRight) player.x += player.speed * dt;
+if(movingUp)    player.y -= player.speed * dt;
+if(movingDown)  player.y += player.speed * dt;
 
 // ── Tilt target ───────────────────────────────────────────────
 if(movingLeft && !movingRight)       shipTiltTarget = -TILT_MAX;
@@ -2825,7 +3907,7 @@ ctx.shadowBlur=0;
 ctx.textAlign="left";
 
 // ── Wave progress bar ─────────────────────────────────────
-if(bossPhase==="wave"){
+if(bossPhase==="wave" && (!nsSettings||nsSettings.wavebar!==false)){
   const size=waveSize(level);
   const progress=Math.min(1, waveKilled/size);
   const barW=200, barH=8;
@@ -2848,7 +3930,7 @@ if(bossPhase==="wave"){
 }
 
 // ── Boss fight indicator ──────────────────────────────────
-if(bossPhase==="fighting" && boss){
+if(bossPhase==="fighting" && boss && (!nsSettings||nsSettings.bossbar!==false)){
   const pulse     = 0.7+0.3*Math.sin(Date.now()*0.008);
   const enrageHUD = boss.hpPhase >= 2;
   const midHUD    = boss.hpPhase === 1;
@@ -2981,9 +4063,10 @@ ctx.textAlign="left";
 
 // ── Pause menu button hit regions (updated each frame) ────────
 const _pauseButtons={
-resume: {x:0,y:0,w:0,h:0},
-restart:{x:0,y:0,w:0,h:0},
-mainmenu:{x:0,y:0,w:0,h:0},
+resume:   {x:0,y:0,w:0,h:0},
+restart:  {x:0,y:0,w:0,h:0},
+settings: {x:0,y:0,w:0,h:0},
+mainmenu: {x:0,y:0,w:0,h:0},
 };
 
 function drawPauseMenu(){
@@ -2996,7 +4079,7 @@ const cx=WIDTH/2;
 const cy=HEIGHT/2;
 
 // Card background
-const cardW=360, cardH=370;
+const cardW=360, cardH=430;
 const cardX=cx-cardW/2;
 const cardY=cy-cardH/2;
 
@@ -3089,7 +4172,8 @@ ctx.fillText(label, cx, by+btnH*0.65);
 
 drawBtn("▶  Resume",    cardY+112, "resume");
 drawBtn("↺  Restart",   cardY+182, "restart");
-drawBtn("⌂  Main Menu", cardY+252, "mainmenu");
+drawBtn("⚙  Settings",  cardY+252, "settings");
+drawBtn("⌂  Main Menu", cardY+322, "mainmenu");
 
 // Hint
 ctx.fillStyle="rgba(150,200,220,0.5)";
@@ -3153,6 +4237,9 @@ canvas.style.cursor="default";
 paused=false;
 canvas.style.cursor="default";
 restartGame();
+} else if(key==="settings"){
+canvas.style.cursor="default";
+openSettingsOverlay();
 } else if(key==="mainmenu"){
 paused=false;
 canvas.style.cursor="default";
@@ -3255,8 +4342,11 @@ lives=3;
 coins=0;
 gameOver=false;
 paused=false;
+_pauseStart=0;      // clear stale pause timestamp
+_pauseHover=null;   // clear stale hover highlight
 lastShot=0;  // reset fire timer so no instant shot on game start
 _frameCount=0;
+_gameLoopLastTs=0;  // reset delta-time tracker
 
 // Reset upgrades for new run (applies ship base stats too)
 resetUpgrades();
@@ -3633,7 +4723,7 @@ playShootSound();
 
 let lastShot=0;
 
-function updateBullets(){
+function updateBullets(dt=1){
 
 for(let i=bullets.length-1;i>=0;i--){
 
@@ -3645,8 +4735,8 @@ b.trail.push({x:b.x+b.width/2, y:b.y+b.height, life:10});
 if(b.trail.length>10) b.trail.shift();
 }
 
-b.x+=(b.vx||0);
-b.y-=b.speed;
+b.x+=(b.vx||0)*dt;
+b.y-=b.speed*dt;
 
 // Age trail
 if(b.boosted){
@@ -3786,7 +4876,7 @@ color:"lime"
 
 }
 
-function updateEnemies(){
+function updateEnemies(dt=1){
 
 if(gameOver) return;
 // Only spawn during the wave phase
@@ -3813,7 +4903,7 @@ for(let i=enemies.length-1;i>=0;i--){
 
 const e=enemies[i];
 
-e.y+=e.speed;
+e.y+=e.speed*dt;
 
 if(e.y>HEIGHT){
 
@@ -5604,10 +6694,11 @@ boss={
   _pulse:0,
   _tentOff:Math.random()*Math.PI*2,
   _phaseFlashTimer:0,
+  _lastUpdateTime:Date.now(), // used for accurate per-frame delta in updateBoss
 };
 }
 
-function updateBoss(){
+function updateBoss(dt=1){
 if(gameOver) return;
 
 // ── Phase machine ──────────────────────────────────────────
@@ -5615,8 +6706,9 @@ if(bossPhase==="warning"){
   if(Date.now()-bossPhaseTimer>=BOSS_WARNING_DUR){
     bossPhase="fighting";
     bossPhaseTimer=Date.now();
-    spawnBoss();
-    playBossWarningSound();
+    // Only spawn if no boss already exists (prevents duplicate on re-entry)
+    if(!boss) spawnBoss();
+    // Note: playBossWarningSound() is called in checkWaveComplete at warning START
   }
   return;
 }
@@ -5629,8 +6721,7 @@ if(bossPhase==="defeated"){
     playLevelUpSound();
     achOnLevelComplete();
     if(handleBossRushNextBoss()){
-      boss=null;
-      bossBullets.length=0;
+      // boss/bullets cleared inside handleBossRushNextBoss
     } else {
       bossPhase="wave";
       boss=null;
@@ -5647,6 +6738,10 @@ if(bossPhase!=="fighting" || !boss) return;
 const lvl  = boss.level;
 const now  = Date.now();
 const hpFrac = boss.health / boss.maxHealth;
+
+// Track per-frame elapsed time for charge timer (prevent time-debt on tab switch)
+const _prevUpdate = boss._lastUpdateTime || now;
+boss._lastUpdateTime = now;
 
 // ── HP phase transitions (0=full, 1=<66%, 2=<33%) ──────────
 const newHpPhase = hpFrac < 0.33 ? 2 : hpFrac < 0.66 ? 1 : 0;
@@ -5667,12 +6762,26 @@ const enrageMult = 1 + boss.hpPhase * 0.5; // ×1 / ×1.5 / ×2
 
 // ── Charging up a special ──────────────────────────────────
 if(boss.chargeTimer > 0){
-  boss.chargeTimer -= 16;
-  // Spawn charge particles pulling toward boss centre
+  // Use real elapsed ms since last frame, clamped to 32ms to avoid spiral on tab-switch
+  const frameMs = Math.min(32, now - _prevUpdate);
+  boss.chargeTimer -= frameMs;
+
+  // Age and splice charge particles INSIDE the charge block so they
+  // don't accumulate unboundedly (the code below the return never runs
+  // while charging, so cleanup must happen here)
+  for(let i=boss.chargeParticles.length-1; i>=0; i--){
+    const p = boss.chargeParticles[i];
+    p.x += (p.tx - p.x) * 0.12;
+    p.y += (p.ty - p.y) * 0.12;
+    p.life--;
+    if(p.life<=0) boss.chargeParticles.splice(i,1);
+  }
+
+  // Cap particle pool so it never exceeds 25 regardless of frame rate
   const bcx = boss.x + boss.width/2;
   const bcy = boss.y + boss.height/2;
-  if(Math.random() < 0.6){
-    const ang = Math.random()*Math.PI*2;
+  if(boss.chargeParticles.length < 25 && Math.random() < 0.55){
+    const ang  = Math.random()*Math.PI*2;
     const dist = 60 + Math.random()*80;
     boss.chargeParticles.push({
       x: bcx + Math.cos(ang)*dist,
@@ -5683,20 +6792,19 @@ if(boss.chargeTimer > 0){
       size: 2+Math.random()*3,
     });
   }
+
   if(boss.chargeTimer <= 0){
-    // Fire the charged special
     _fireBossSpecial(boss, boss.chargeType);
     boss.chargeTimer = 0;
     boss.chargeType  = '';
   }
-  // Boss slows down while charging
+  // Boss is stationary while charging — skip movement/attack
   return;
 }
 
 // ── Laser sweep update ─────────────────────────────────────
 if(boss.laserActive){
-  boss.laserTimer -= 16;
-  // Sweep angle toward player
+  boss.laserTimer -= 16; // stable step — laser duration is generous, drift is harmless
   const px = player.x + player.width/2;
   const py = player.y + player.height/2;
   const bcx2 = boss.x + boss.width/2;
@@ -5780,7 +6888,7 @@ if(boss.hitFlash > 0) boss.hitFlash--;
   // Steer toward targetX
   const diff = boss.targetX - bcx3;
   if(Math.abs(diff) > 4){
-    boss.x += Math.sign(diff) * Math.min(spd, Math.abs(diff));
+    boss.x += Math.sign(diff) * Math.min(spd * dt, Math.abs(diff));
   }
 
   // Clamp
@@ -5811,12 +6919,12 @@ if(boss.diving){
     triggerShake(8, 12);
   } else {
     const spd = boss.speed * enrageMult * 3.5;
-    boss.x += dx/dist*spd;
-    boss.y += dy/dist*spd;
+    boss.x += dx/dist*spd*dt;
+    boss.y += dy/dist*spd*dt;
   }
 } else {
   // Return to patrol row gently
-  if(boss.y > boss.diveReturnY + 2) boss.y -= boss.speed * enrageMult * 1.2;
+  if(boss.y > boss.diveReturnY + 2) boss.y -= boss.speed * enrageMult * 1.2 * dt;
 }
 
 // ── Regular attack ─────────────────────────────────────────
@@ -6047,7 +7155,7 @@ function fireAimedShot(ox,oy,dmg,offsetVx=0){
   _fireAimedBullet(ox,oy,'#ff2222',dmg,offsetVx);
 }
 
-function updateBossBullets(){
+function updateBossBullets(dt=1){
 if(gameOver) return;
 const px=player.x+player.width/2;
 const py=player.y+player.height/2;
@@ -6074,8 +7182,8 @@ for(let i=bossBullets.length-1;i>=0;i--){
     const maxSpd=7+level*0.3;
     if(spd>maxSpd){ b.vx=b.vx/spd*maxSpd; b.vy=b.vy/spd*maxSpd; }
   }
-  b.x+=b.vx;
-  b.y+=b.vy;
+  b.x+=b.vx*dt;
+  b.y+=b.vy*dt;
 
   if(b.y>HEIGHT+20 || b.y<-30 || b.x<-30 || b.x>WIDTH+30){
     bossBullets.splice(i,1); continue;
@@ -6215,7 +7323,11 @@ ctx.globalAlpha = 1;
 // ════════════════════════════════════════
 const wingFlap = boss.diving ? Math.sin(t*8)*0.18 : Math.sin(t*2)*0.06;
 
-[[-1,1],[1,1],[-1,-1],[1,-1]].forEach(([sx,sy],wi)=>{
+// Set shadow once outside the loop — restored automatically by ctx.restore()
+ctx.shadowColor = pal.glow;
+ctx.shadowBlur  = 6;
+
+[[-1,1],[1,1],[-1,-1],[1,-1]].forEach(([sx,sy])=>{
   const wBaseX = cx + sx*hw*0.75;
   const wBaseY = cy + sy*hh*0.18;
   const tipX   = cx + sx*(hw*1.55 + lvl*4) + Math.cos(wingFlap*sy)*10;
@@ -6224,8 +7336,6 @@ const wingFlap = boss.diving ? Math.sin(t*8)*0.18 : Math.sin(t*2)*0.06;
   const midY   = (wBaseY+tipY)/2 - sy*10;
 
   ctx.save();
-  ctx.shadowColor = pal.glow;
-  ctx.shadowBlur  = 8;
 
   // Wing panel fill
   const wGrd = ctx.createLinearGradient(wBaseX, wBaseY, tipX, tipY);
@@ -6241,20 +7351,20 @@ const wingFlap = boss.diving ? Math.sin(t*8)*0.18 : Math.sin(t*2)*0.06;
   ctx.closePath();
   ctx.fill();
 
-  // Wing edge glow line
+  // Wing edge line — no shadow needed
+  ctx.shadowBlur  = 0;
   ctx.globalAlpha = 0.7;
   ctx.strokeStyle = pal.dome;
   ctx.lineWidth   = 1.5;
-  ctx.shadowBlur  = 0;
   ctx.beginPath();
   ctx.moveTo(wBaseX, wBaseY);
   ctx.quadraticCurveTo(midX, midY, tipX, tipY);
   ctx.stroke();
 
-  // Wingtip thruster (small glowing orb)
+  // Wingtip thruster orb
   ctx.globalAlpha = 0.9;
   ctx.shadowColor = enrage ? '#ff2200' : pal.eyes;
-  ctx.shadowBlur  = 14;
+  ctx.shadowBlur  = 12;
   ctx.fillStyle   = enrage ? '#ff4400' : pal.dome;
   ctx.beginPath();
   ctx.arc(tipX, tipY, 4+pulse*1.5, 0, Math.PI*2);
@@ -6262,6 +7372,7 @@ const wingFlap = boss.diving ? Math.sin(t*8)*0.18 : Math.sin(t*2)*0.06;
 
   ctx.restore();
 });
+ctx.shadowBlur  = 0;
 ctx.globalAlpha = 1;
 
 // ════════════════════════════════════════
@@ -6341,39 +7452,47 @@ const eyePositions = [
   {ox: hw*0.32, oy:-hh*0.08, r:6+lvl*0.5},
   {ox: 0,       oy: hh*0.14, r:4+lvl*0.3},
 ];
+
+// Pass 1: all glowing irises in one shadow state
 ctx.shadowColor = pal.eyes;
-ctx.shadowBlur  = 14 + pulse*5;
-eyePositions.forEach((ep,ei)=>{
-  const ex = cx + ep.ox;
-  const ey = cy + ep.oy;
-  const er = ep.r;
-
-  // Outer iris
-  ctx.fillStyle = pal.eyes;
-  ctx.beginPath(); ctx.arc(ex, ey, er, 0, Math.PI*2); ctx.fill();
-
-  // Dark pupil
-  ctx.shadowBlur = 0;
-  ctx.fillStyle  = '#000000';
-  ctx.beginPath(); ctx.arc(ex, ey, er*0.5, 0, Math.PI*2); ctx.fill();
-
-  // Pupil glint
-  const gx = ex + Math.cos(ang*(ei%2===0?1:-1))*er*0.28;
-  const gy = ey + Math.sin(ang)*er*0.28;
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath(); ctx.arc(gx, gy, er*0.18, 0, Math.PI*2); ctx.fill();
-
-  // Enrage: red ring flicker
-  if(enrage){
-    ctx.strokeStyle = '#ff2200';
-    ctx.lineWidth   = 1.5;
-    ctx.shadowColor = '#ff2200';
-    ctx.shadowBlur  = 10;
-    ctx.beginPath(); ctx.arc(ex, ey, er+2+pulse, 0, Math.PI*2); ctx.stroke();
-  }
-  ctx.shadowBlur  = 0;
-  ctx.shadowColor = pal.eyes;
+ctx.shadowBlur  = 12 + pulse*4;
+ctx.fillStyle   = pal.eyes;
+eyePositions.forEach(ep=>{
+  ctx.beginPath();
+  ctx.arc(cx+ep.ox, cy+ep.oy, ep.r, 0, Math.PI*2);
+  ctx.fill();
 });
+
+// Pass 2: pupils + glints — no shadow needed
+ctx.shadowBlur = 0;
+ctx.fillStyle  = '#000000';
+eyePositions.forEach(ep=>{
+  ctx.beginPath();
+  ctx.arc(cx+ep.ox, cy+ep.oy, ep.r*0.5, 0, Math.PI*2);
+  ctx.fill();
+});
+ctx.fillStyle = '#ffffff';
+eyePositions.forEach((ep,ei)=>{
+  const gx = cx+ep.ox + Math.cos(ang*(ei%2===0?1:-1))*ep.r*0.28;
+  const gy = cy+ep.oy + Math.sin(ang)*ep.r*0.28;
+  ctx.beginPath();
+  ctx.arc(gx, gy, ep.r*0.18, 0, Math.PI*2);
+  ctx.fill();
+});
+
+// Pass 3: enrage rings (only when enraged, batched)
+if(enrage){
+  ctx.shadowColor = '#ff2200';
+  ctx.shadowBlur  = 10;
+  ctx.strokeStyle = '#ff2200';
+  ctx.lineWidth   = 1.5;
+  eyePositions.forEach(ep=>{
+    ctx.beginPath();
+    ctx.arc(cx+ep.ox, cy+ep.oy, ep.r+2+pulse, 0, Math.PI*2);
+    ctx.stroke();
+  });
+  ctx.shadowBlur = 0;
+}
 
 // ════════════════════════════════════════
 // 6. PLASMA CANNON BARRELS
@@ -6538,18 +7657,22 @@ ctx.shadowBlur = 0;
 if(boss.chargeParticles && boss.chargeParticles.length){
   const chargeProgress = boss.chargeMax > 0
     ? 1 - boss.chargeTimer / boss.chargeMax : 0;
+
+  // Set shadow ONCE outside the loop — not per-particle (avoids GPU flush per arc)
+  ctx.shadowColor = boss.pal.eyes;
+  ctx.shadowBlur  = 10;
+  ctx.fillStyle   = boss.pal.eyes;
+
   for(const p of boss.chargeParticles){
     const a = p.life / p.maxLife;
-    ctx.save();
-    ctx.globalAlpha = a * 0.9;
-    ctx.shadowColor = p.color;
-    ctx.shadowBlur  = 12;
-    ctx.fillStyle   = p.color;
+    ctx.globalAlpha = a * 0.85;
     ctx.beginPath();
     ctx.arc(p.x, p.y, p.size*(1-chargeProgress*0.5+0.1), 0, Math.PI*2);
     ctx.fill();
-    ctx.restore();
   }
+
+  ctx.shadowBlur  = 0;
+  ctx.globalAlpha = 1;
   // Central charge glow that grows as charge fills
   const chargeR = 18 + chargeProgress * 55;
   ctx.save();
@@ -6719,14 +7842,13 @@ if(bossPhase==="warning"){
   const pulse    = 0.7+0.3*Math.sin(elapsed*0.014);
 
   ctx.save();
-  ctx.globalAlpha = fade*pulse;
 
-  // Red screen vignette
+  // Red screen vignette — pulsing
   const vgrd = ctx.createRadialGradient(WIDTH/2,HEIGHT/2,HEIGHT*0.2,WIDTH/2,HEIGHT/2,HEIGHT*0.9);
   vgrd.addColorStop(0,'rgba(0,0,0,0)');
   vgrd.addColorStop(1,'rgba(200,0,0,0.55)');
   ctx.fillStyle   = vgrd;
-  ctx.globalAlpha = fade;
+  ctx.globalAlpha = fade * pulse;  // pulse the vignette too
   ctx.fillRect(0,0,WIDTH,HEIGHT);
 
   ctx.globalAlpha = fade*pulse;
@@ -6955,15 +8077,22 @@ function drawStars(){
 // MAIN GAME LOOP
 //=========================
 
-function gameLoop() {
+function gameLoop(ts=0) {
+
+    // ── Real delta time (clamped to 100ms to prevent spiral on tab-switch) ──
+    // Use a module-level variable so state isn't stored on the function object
+    if(_gameLoopLastTs === 0) _gameLoopLastTs = ts;
+    const rawDt = Math.min(ts - _gameLoopLastTs, 100);
+    _gameLoopLastTs = ts;
+    // dt=1 at 60fps. If rawDt is 0 (first frame), default to one 60fps frame.
+    let dt = rawDt > 0 ? rawDt / (1000/60) : 1;
 
     // ── Slow-motion time scaling ──────────────────────────────
-    let dt=1;
     if(slowMoActive && !paused){
-      slowMoTimer-=16;  // approx ms per frame
-      slowMoScale=SLOW_MO_SCALE+(1-SLOW_MO_SCALE)*(1-slowMoTimer/SLOW_MO_DURATION);
-      dt=Math.max(SLOW_MO_SCALE, slowMoScale);
-      if(slowMoTimer<=0){ slowMoActive=false; slowMoScale=1; dt=1; }
+      slowMoTimer -= rawDt;
+      slowMoScale = SLOW_MO_SCALE + (1-SLOW_MO_SCALE)*(1-Math.max(0,slowMoTimer)/SLOW_MO_DURATION);
+      dt *= Math.max(SLOW_MO_SCALE, slowMoScale);
+      if(slowMoTimer<=0){ slowMoActive=false; slowMoScale=1; }
     }
 
     // Clear screen
@@ -6978,8 +8107,25 @@ function gameLoop() {
       return;
     }
 
-    // If shop overlay is open, freeze game updates but keep canvas drawing
+    // If shop overlay is open, draw frozen game world but skip updates
     if(shopOpen){
+      ctx.save();
+      applyShake();
+      drawExhaust();
+      drawShipGhosts();
+      drawPlayer();
+      drawBullets();
+      drawEnemies();
+      if(!nsSettings||nsSettings.combopop!==false) drawComboOverlay();
+      drawBoss();
+      drawBossBullets();
+      drawParticles();
+      if(!nsSettings||nsSettings.dmgnums!==false) drawDmgNumbers();
+      drawHUD();
+      // Dim overlay so shop feels layered on top
+      ctx.fillStyle='rgba(0,0,10,0.45)';
+      ctx.fillRect(0,0,WIDTH,HEIGHT);
+      ctx.restore();
       requestAnimationFrame(gameLoop);
       return;
     }
@@ -6993,26 +8139,27 @@ function gameLoop() {
         if(!paused){
 
         // Engine exhaust every 3 frames (use frame counter, not ms modulo)
-        const isMovingNow = keys["ArrowLeft"]||keys["ArrowRight"]||keys["ArrowUp"]||keys["ArrowDown"];
+        const isMovingNow = keys[keyBindings.moveLeft]||keys[keyBindings.moveRight]||keys[keyBindings.moveUp]||keys[keyBindings.moveDown];
         if(++_frameCount%3===0) spawnExhaust(isMovingNow);
         updateExhaust();
         updateDmgNumbers();
 
         // Player
-        movePlayer();
+        movePlayer(dt);
 
-        // Auto-fire bullets continuously
+        // Fire bullets — auto mode fires continuously, manual mode requires shoot key held
         const now=Date.now();
-        if(now-lastShot>fireCooldown){
+        const shootHeld = keys[keyBindings.shoot];
+        if(now-lastShot>fireCooldown && (fireMode==='auto' || shootHeld)){
         fireBullet();
         lastShot=now;
         }
 
         // Bullets
-        updateBullets();
+        updateBullets(dt);
 
         // Enemies
-        updateEnemies();
+        updateEnemies(dt);
 
         // Power-ups
         updatePowerups();
@@ -7036,8 +8183,8 @@ function gameLoop() {
         updateAutoKillPowerups();
 
         // Boss
-        updateBoss();
-        updateBossBullets();
+        updateBoss(dt);
+        updateBossBullets(dt);
 
         // Particles
         updateParticles();
@@ -7075,11 +8222,11 @@ function gameLoop() {
         drawAutoKillPowerups();
         drawZapEffects();
         drawScorePopups();
-        drawComboOverlay();
+        if(!nsSettings||nsSettings.combopop!==false) drawComboOverlay();
         drawBoss();
         drawBossBullets();
         drawParticles();
-        drawDmgNumbers();
+        if(!nsSettings||nsSettings.dmgnums!==false) drawDmgNumbers();
         drawHUD();
         drawLevelUp();
         drawBossPhaseOverlay();
@@ -7157,19 +8304,518 @@ const settings = {
 try{
   const s=JSON.parse(localStorage.getItem('ssSettings')||'{}');
   Object.assign(settings,s);
-  if(!settings.music)     document.getElementById('toggleMusic').classList.remove('on');
-  if(!settings.sfx)       document.getElementById('toggleSFX').classList.remove('on');
-  if(!settings.shake)     document.getElementById('toggleShake').classList.remove('on');
-  if(!settings.particles) document.getElementById('toggleParticles').classList.remove('on');
+  // Old panel toggles removed — ns toggles are synced via _nsSyncToggles() on open
   const mv=Math.round(settings.musicVol*100);
   const sv=Math.round(settings.sfxVol*100);
-  document.getElementById('sliderMusicVol').value=mv;
-  document.getElementById('sliderSFXVol').value=sv;
-  document.getElementById('lblMusicVol').textContent=mv+'%';
-  document.getElementById('lblSFXVol').textContent=sv+'%';
+  const smv=document.getElementById('sliderMusicVol'); if(smv) smv.value=mv;
+  const ssv=document.getElementById('sliderSFXVol');   if(ssv) ssv.value=sv;
+  const lmv=document.getElementById('lblMusicVol');    if(lmv) lmv.textContent=mv+'%';
+  const lsv=document.getElementById('lblSFXVol');      if(lsv) lsv.textContent=sv+'%';
 }catch(e){}
 
 function saveSettings(){ localStorage.setItem('ssSettings',JSON.stringify(settings)); }
+
+// ═══════════════════════════════════════════════════════════════
+// NEW SETTINGS OVERLAY  — JS
+// ═══════════════════════════════════════════════════════════════
+
+// Extended settings (new keys, persisted separately to avoid breaking old ssSettings)
+const nsSettings = {
+  slowmo:   true,
+  hitflash: true,
+  stars:    true,
+  dmgnums:  true,
+  combopop: true,
+  wavebar:  true,
+  bossbar:  true,
+};
+try{
+  const ns = JSON.parse(localStorage.getItem('ssNsSettings') || '{}');
+  Object.assign(nsSettings, ns);
+}catch(e){}
+
+function saveNsSettings(){ localStorage.setItem('ssNsSettings', JSON.stringify(nsSettings)); }
+
+// Gameplay cycle settings
+const gpOptions = ['ON', 'OFF'];
+const gpSettingsDef = [
+  { key:'camshake',   label:'Camera Shake',     val:0 },
+  { key:'tutorial',   label:'Tutorial Hints',    val:0 },
+  { key:'dmgnumsgp',  label:'Damage Numbers',    val:0 },
+  { key:'hitefx',     label:'Show Hit Effects',  val:0 },
+  { key:'combopopgp', label:'Combo Popups',      val:0 },
+  { key:'slowmogp',   label:'Slow Motion on Hit',val:0 },
+];
+let gpValues = {};
+try{
+  const gv = JSON.parse(localStorage.getItem('ssGpValues') || '{}');
+  Object.assign(gpValues, gv);
+}catch(e){}
+gpSettingsDef.forEach(d=>{ if(!(d.key in gpValues)) gpValues[d.key]=0; });
+function saveGpValues(){ localStorage.setItem('ssGpValues', JSON.stringify(gpValues)); }
+
+// ── Open / close ──────────────────────────────────────────────
+function openSettingsOverlay(){
+  // Sync toggle states from current settings
+  _nsSyncToggles();
+  _nsRenderBindRows();
+  _nsUpdateFireCards();
+  _nsRenderGpGrid();
+  document.getElementById('settingsOverlay').classList.add('open');
+  playMenuClick();
+}
+function closeSettingsOverlay(){
+  const el = document.getElementById('settingsOverlay');
+  el.classList.add('closing');
+  el.classList.remove('open');
+  const cleanup = ()=>{ el.classList.remove('closing'); };
+  const onEnd = ()=>{ cleanup(); el.removeEventListener('animationend', onEnd); clearTimeout(fallback); };
+  const fallback = setTimeout(cleanup, 400);
+  el.addEventListener('animationend', onEnd);
+  cancelListening();
+  // If called from in-game (paused), push all timers forward
+  if(typeof paused !== 'undefined' && paused && typeof _pauseStart !== 'undefined'){
+    const gap = Date.now() - _pauseStart;
+    _pauseStart = Date.now(); // reset so the existing Esc-unpause logic stays correct
+    // push timers so nothing fires immediately on resume
+    if(typeof lastEnemy !== 'undefined'){
+      lastEnemy +=gap; lastPowerup +=gap; lastShieldPowerup +=gap;
+      lastDmgPowerup +=gap; lastHealthPowerup +=gap; lastMultiShotPowerup +=gap;
+      lastCoinPowerup +=gap; lastAutoKillPowerup +=gap; bossPhaseTimer +=gap;
+      lastShot +=gap;
+      if(typeof blitzStartTime!=='undefined') blitzStartTime +=gap;
+      if(boss){ boss.lastShot +=gap; boss.phaseTimer +=gap; }
+      if(rapidFireActive)  rapidFireExpiry  +=gap;
+      if(shieldActive)     shieldExpiry     +=gap;
+      if(dmgBoostActive)   dmgBoostExpiry   +=gap;
+      if(multiShotActive)  multiShotExpiry  +=gap;
+      if(autoKillActive)   autoKillExpiry   +=gap;
+      levelUpMsg=(levelUpMsg>0)?levelUpMsg+gap:0;
+    }
+  }
+  playMenuBack();
+}
+
+// ── Tab switching ──────────────────────────────────────────────
+function switchSettingsTab(id, btn){
+  document.querySelectorAll('.stab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.stab-pane').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('spane-'+id).classList.add('active');
+  playMenuClick();
+}
+
+// ── Sync toggle DOM from settings ─────────────────────────────
+function _nsSyncToggles(){
+  const map = {
+    nsToggleMusic:    settings.music,
+    nsToggleSFX:      settings.sfx,
+    nsToggleShake:    settings.shake,
+    nsToggleParticles:settings.particles,
+    nsToggleSlowmo:   nsSettings.slowmo,
+    nsToggleHitFlash: nsSettings.hitflash,
+    nsToggleStars:    nsSettings.stars,
+    nsToggleDmgNums:  nsSettings.dmgnums,
+    nsToggleComboPop: nsSettings.combopop,
+    nsToggleWaveBar:  nsSettings.wavebar,
+    nsToggleBossBar:  nsSettings.bossbar,
+  };
+  Object.entries(map).forEach(([id, on])=>{
+    const el = document.getElementById(id);
+    if(el) el.classList.toggle('on', on);
+  });
+  // Sliders
+  const mv = Math.round(settings.musicVol*100);
+  const sv = Math.round(settings.sfxVol*100);
+  const ms = document.getElementById('nsMusicSlider');
+  const ss = document.getElementById('nsSFXSlider');
+  const mp = document.getElementById('nsMusicPct');
+  const sp = document.getElementById('nsSFXPct');
+  if(ms) ms.value = mv;
+  if(ss) ss.value = sv;
+  if(mp) mp.textContent = mv+'%';
+  if(sp) sp.textContent = sv+'%';
+}
+
+// ── Toggle handler (new settings overlay) ────────────────────
+function nsToggle(key, el){
+  el.classList.toggle('on');
+  const on = el.classList.contains('on');
+  // Map to existing settings keys or new nsSettings
+  if(key === 'music'){
+    settings.music = on;
+    on ? startBGMusic() : stopBGMusic();
+    saveSettings();
+  } else if(key === 'sfx'){
+    settings.sfx = on;
+    saveSettings();
+  } else if(key === 'shake'){
+    settings.shake = on;
+    saveSettings();
+  } else if(key === 'particles'){
+    settings.particles = on;
+    saveSettings();
+  } else {
+    nsSettings[key] = on;
+    saveNsSettings();
+  }
+  playMenuClick();
+}
+
+// ── Volume sliders ─────────────────────────────────────────────
+function nsSetMusicVol(val){
+  settings.musicVol = val/100;
+  document.getElementById('nsMusicPct').textContent = val+'%';
+  // Keep old slider in sync
+  const old = document.getElementById('sliderMusicVol');
+  const lbl = document.getElementById('lblMusicVol');
+  if(old) old.value = val;
+  if(lbl) lbl.textContent = val+'%';
+  if(bgMusicGain) bgMusicGain.gain.value = settings.musicVol * 0.18;
+  saveSettings();
+}
+function nsSetSFXVol(val){
+  settings.sfxVol = val/100;
+  document.getElementById('nsSFXPct').textContent = val+'%';
+  const old = document.getElementById('sliderSFXVol');
+  const lbl = document.getElementById('lblSFXVol');
+  if(old) old.value = val;
+  if(lbl) lbl.textContent = val+'%';
+  saveSettings();
+}
+
+// ── Key bind rows ──────────────────────────────────────────────
+function _nsRenderBindRows(){
+  const container = document.getElementById('nsBindRows');
+  if(!container) return;
+  container.innerHTML = BIND_ACTIONS.map(a=>{
+    const isL    = _bindingFor === a.id;
+    const cls    = 'ns-key-btn' + (isL ? ' listening' : '');
+    const lbl    = isL ? '… press key' : keyLabel(keyBindings[a.id]);
+    const hilite = a.id === 'shoot' ? ' highlight' : '';
+    return `<div class="ns-bind-row">
+      <span class="ns-bind-label${hilite}">${a.label}</span>
+      <button class="${cls}" onclick="nsStartListen('${a.id}')" ${isL?'disabled':''}>${lbl}</button>
+    </div>`;
+  }).join('');
+}
+
+function nsStartListen(actionId){
+  startListening(actionId);   // reuse existing listen system
+  _nsRenderBindRows();         // refresh UI
+  renderControlsPanel();       // keep legacy panels in sync
+}
+
+// Override renderControlsPanel to also refresh ns bind rows
+const _origRenderControlsPanel = renderControlsPanel;
+renderControlsPanel = function(){
+  _origRenderControlsPanel();
+  _nsRenderBindRows();
+  _nsUpdateFireCards();
+};
+
+// ── Fire mode ─────────────────────────────────────────────────
+function nsSetFireMode(mode){
+  setFireMode(mode);   // calls existing setFireMode which saves & re-renders
+  _nsUpdateFireCards();
+}
+function _nsUpdateFireCards(){
+  const auto   = document.getElementById('nsFireAuto');
+  const manual = document.getElementById('nsFireManual');
+  if(auto)   auto.classList.toggle('active',   fireMode==='auto');
+  if(manual) manual.classList.toggle('active', fireMode==='manual');
+}
+
+// ── Gameplay grid ──────────────────────────────────────────────
+function _nsRenderGpGrid(){
+  const grid = document.getElementById('gpGrid');
+  if(!grid) return;
+  grid.innerHTML = gpSettingsDef.map(d=>{
+    const v = gpOptions[gpValues[d.key]];
+    return `<div class="gp-row">
+      <span class="gp-label">${d.label}</span>
+      <div class="gp-arrows">
+        <button class="gp-arrow-btn" onclick="gpCycle('${d.key}',-1)">‹</button>
+        <span class="gp-val" id="gp_${d.key}">${v}</span>
+        <button class="gp-arrow-btn" onclick="gpCycle('${d.key}',1)">›</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function gpCycle(key, dir){
+  gpValues[key] = (gpValues[key] + dir + gpOptions.length) % gpOptions.length;
+  const el = document.getElementById('gp_'+key);
+  if(el) el.textContent = gpOptions[gpValues[key]];
+  saveGpValues();
+  playMenuClick();
+}
+
+// ── Footer actions ─────────────────────────────────────────────
+function nsApply(){
+  // All changes are live already; this just gives tactile confirmation + closes
+  playMenuClick();
+  // Flash the overlay briefly
+  const shell = document.getElementById('settingsShell');
+  shell.style.boxShadow = '0 0 60px rgba(40,200,80,0.5)';
+  setTimeout(()=>{ shell.style.boxShadow = ''; }, 400);
+  closeSettingsOverlay();
+}
+function nsResetAll(){
+  if(!confirm('Reset ALL settings to default values?\n\nThis will NOT clear your scores or achievements.')) return;
+  // Audio
+  settings.music = true; settings.sfx = true; settings.shake = true; settings.particles = true;
+  settings.musicVol = 0.40; settings.sfxVol = 0.70;
+  saveSettings();
+  // NS settings
+  Object.keys(nsSettings).forEach(k=>{ nsSettings[k] = true; });
+  saveNsSettings();
+  // Controls
+  resetControlsToDefault();
+  // GP
+  gpSettingsDef.forEach(d=>{ gpValues[d.key] = 0; });
+  saveGpValues();
+  // Re-sync overlay UI
+  _nsSyncToggles();
+  _nsRenderBindRows();
+  _nsUpdateFireCards();
+  _nsRenderGpGrid();
+  settings.music ? startBGMusic() : stopBGMusic();
+  playMenuClick();
+}
+
+// Initial sync when script runs (settings loaded from localStorage before this)
+setTimeout(()=>{
+  _nsSyncToggles();
+  _nsRenderBindRows();
+  _nsUpdateFireCards();
+  _nsRenderGpGrid();
+}, 0);
+
+// ═══════════════════════════════════════════════════════════════
+// KEY BINDINGS & FIRE MODE SYSTEM
+// ═══════════════════════════════════════════════════════════════
+
+const DEFAULT_BINDINGS = {
+  moveUp:    'ArrowUp',
+  moveDown:  'ArrowDown',
+  moveLeft:  'ArrowLeft',
+  moveRight: 'ArrowRight',
+  shoot:     ' ',           // Space
+  pause:     'Escape',
+  restart:   'r',
+};
+
+// Live bindings — start from defaults, overwritten by localStorage
+let keyBindings = Object.assign({}, DEFAULT_BINDINGS);
+
+// Fire mode: 'auto' | 'manual'
+let fireMode = 'auto';
+
+// Load saved bindings
+(function loadBindings(){
+  try{
+    const saved = JSON.parse(localStorage.getItem('ssKeyBindings') || '{}');
+    Object.assign(keyBindings, saved);
+  }catch(e){}
+  try{
+    const fm = localStorage.getItem('ssFireMode');
+    if(fm === 'auto' || fm === 'manual') fireMode = fm;
+  }catch(e){}
+})();
+
+function saveBindings(){
+  localStorage.setItem('ssKeyBindings', JSON.stringify(keyBindings));
+  localStorage.setItem('ssFireMode', fireMode);
+}
+
+// Human-readable key label
+function keyLabel(k){
+  if(!k) return '—';
+  const map = {
+    ' ':'Space', 'Escape':'Esc', 'ArrowUp':'↑', 'ArrowDown':'↓',
+    'ArrowLeft':'←', 'ArrowRight':'→', 'Enter':'Enter',
+    'Backspace':'Bksp', 'Delete':'Del', 'Tab':'Tab',
+    'Control':'Ctrl', 'Shift':'Shift', 'Alt':'Alt',
+  };
+  return map[k] || (k.length === 1 ? k.toUpperCase() : k);
+}
+
+// Ordered list of bindable actions for the UI
+const BIND_ACTIONS = [
+  { id:'moveUp',    label:'Move Up' },
+  { id:'moveDown',  label:'Move Down' },
+  { id:'moveLeft',  label:'Move Left' },
+  { id:'moveRight', label:'Move Right' },
+  { id:'shoot',     label:'Shoot / Fire' },
+  { id:'pause',     label:'Pause / Resume' },
+  { id:'restart',   label:'Restart (Game Over)' },
+];
+
+// Currently listening for which action (null = not listening)
+let _bindingFor = null;
+
+function startListening(actionId){
+  // Cancel any existing listener
+  if(_bindingFor) cancelListening();
+  _bindingFor = actionId;
+  // Update button visuals in both panels
+  _refreshListeningState();
+  // Global one-shot key capture
+  window.addEventListener('keydown', _captureKey, { capture: true, once: true });
+}
+
+function cancelListening(){
+  _bindingFor = null;
+  window.removeEventListener('keydown', _captureKey, { capture: true });
+  _refreshListeningState();
+}
+
+function _captureKey(e){
+  e.preventDefault();
+  e.stopPropagation();
+
+  // Esc while listening = cancel
+  if(e.key === 'Escape'){
+    _bindingFor = null;
+    _refreshListeningState();
+    return;
+  }
+
+  const newKey = e.key;
+  const action = _bindingFor;
+  _bindingFor  = null;
+
+  // Check for conflicts (same key on a different action)
+  const conflict = Object.entries(keyBindings).find(([id, k]) => k === newKey && id !== action);
+  if(conflict){
+    _showConflict();
+    _refreshListeningState();
+    return;
+  }
+
+  keyBindings[action] = newKey;
+  saveBindings();
+  _applyBindings();
+  renderControlsPanel();   // refresh both panels
+}
+
+function _showConflict(){
+  ['ctrlConflictMsg','inGameCtrlConflictMsg'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el){ el.classList.add('show'); setTimeout(()=>el.classList.remove('show'), 2200); }
+  });
+}
+
+function _refreshListeningState(){
+  // Re-render so buttons reflect listening/idle state
+  renderControlsPanel();
+}
+
+function resetControlsToDefault(){
+  keyBindings = Object.assign({}, DEFAULT_BINDINGS);
+  fireMode    = 'auto';
+  saveBindings();
+  _applyBindings();
+  renderControlsPanel();
+}
+
+// Apply bindings to the actual gameplay — updates the key lists used
+// by the game loop and keydown handler.  Called on every bind change.
+function _applyBindings(){
+  // Rebuild scroll-prevention list
+  _updateScrollPrevention();
+}
+
+// Keys that should not scroll the page
+function _updateScrollPrevention(){
+  // handled in keydown via isGameKey() below
+}
+
+// Returns true if a raw e.key matches the bound key for an action (case-insensitive for letters)
+function isAction(e, actionId){
+  const bound = keyBindings[actionId];
+  if(!bound) return false;
+  // Letter keys: compare case-insensitively
+  if(bound.length === 1) return e.key.toLowerCase() === bound.toLowerCase();
+  return e.key === bound;
+}
+
+// Render controls panel body (shared between menu panel and in-game overlay)
+function renderControlsPanel(){
+  const bodies = [
+    document.getElementById('controlsPanelBody'),
+    document.getElementById('inGameControlsPanelBody'),
+  ];
+
+  const html = `
+    <p class="ctrl-section-title">Fire Mode</p>
+    <div class="fire-mode-row">
+      <button class="fire-mode-btn ${fireMode==='auto'?'active':''}"
+              onclick="setFireMode('auto')">
+        🔄 Auto Fire
+        <span style="display:block;font-size:10px;font-weight:400;letter-spacing:.5px;opacity:.7;margin-top:2px">Ship fires continuously</span>
+      </button>
+      <button class="fire-mode-btn ${fireMode==='manual'?'active':''}"
+              onclick="setFireMode('manual')">
+        🎯 Manual Fire
+        <span style="display:block;font-size:10px;font-weight:400;letter-spacing:.5px;opacity:.7;margin-top:2px">Hold Shoot key to fire</span>
+      </button>
+    </div>
+
+    <p class="ctrl-section-title" style="margin-top:16px">Key Bindings</p>
+    ${BIND_ACTIONS.map(a=>{
+      const isListening = _bindingFor === a.id;
+      const btnClass    = 'ctrl-key-btn' + (isListening ? ' listening' : '');
+      const btnLabel    = isListening ? '… press a key' : keyLabel(keyBindings[a.id]);
+      const btnTitle    = isListening ? 'Press any key to bind (Esc to cancel)' : 'Click to rebind';
+      return `
+      <div class="ctrl-row">
+        <span class="ctrl-label">${a.label}</span>
+        <button class="${btnClass}" title="${btnTitle}"
+                onclick="startListening('${a.id}')"
+                ${isListening?'disabled':''}>
+          ${btnLabel}
+        </button>
+      </div>`;
+    }).join('')}
+  `;
+
+  bodies.forEach(el=>{ if(el) el.innerHTML = html; });
+}
+
+function setFireMode(mode){
+  fireMode = mode;
+  saveBindings();
+  renderControlsPanel();
+}
+
+// Open / close in-game controls overlay (from pause menu)
+function openInGameControls(){
+  renderControlsPanel();
+  const el = document.getElementById('inGameControlsOverlay');
+  el.style.display = 'flex';
+}
+function closeInGameControls(){
+  cancelListening();
+  const el = document.getElementById('inGameControlsOverlay');
+  el.style.display = 'none';
+}
+
+// Initial render so panels are ready when first opened
+renderControlsPanel();
+
+// Update How To Play controls list with current bindings
+function updateHowToControls(){
+  const el = document.getElementById('howToControlsList');
+  if(!el) return;
+  const fm = fireMode==='manual' ? ` · <strong style="color:#ffee00">Hold ${keyLabel(keyBindings.shoot)}</strong> to fire` : '';
+  el.innerHTML = `
+    <li><strong style="color:#00e5ff">${keyLabel(keyBindings.moveUp)} / ${keyLabel(keyBindings.moveDown)} / ${keyLabel(keyBindings.moveLeft)} / ${keyLabel(keyBindings.moveRight)}</strong> — Move your ship</li>
+    <li><strong style="color:#00e5ff">${keyLabel(keyBindings.pause)}</strong> — Pause / Resume${fm}</li>
+    <li><strong style="color:#00e5ff">${keyLabel(keyBindings.restart)}</strong> — Restart (on Game Over screen)</li>
+    <li style="color:rgba(140,200,255,0.55);font-size:0.9em">Fire Mode: <strong style="color:#ffee00">${fireMode==='auto'?'Auto Fire (continuous)':'Manual Fire (hold key)'}</strong></li>
+  `;
+}
 
 // ── Background Music ──────────────────────────────────────────────
 let bgMusicNodes = null;
@@ -7253,10 +8899,10 @@ function setSFXVolume(val){
 
 function toggleSetting(key, el){
   settings[key] = !settings[key];
-  el.classList.toggle('on', settings[key]);
+  if(el) el.classList.toggle('on', settings[key]);
   if(key==='music'){
-    document.getElementById('toggleMusic').classList.toggle('on', settings.music);
-    document.getElementById('musicToggle').textContent = settings.music ? '♪' : '♩';
+    const mt = document.getElementById('musicToggle');
+    if(mt) mt.textContent = settings.music ? '♪' : '♩';
     settings.music ? startBGMusic() : stopBGMusic();
   }
   saveSettings();
@@ -7265,8 +8911,14 @@ function toggleSetting(key, el){
 
 // Music toggle button (top-right of menu)
 document.getElementById('musicToggle').addEventListener('click',()=>{
-  toggleSetting('music', document.getElementById('toggleMusic'));
+  settings.music = !settings.music;
   document.getElementById('musicToggle').textContent = settings.music ? '♪' : '♩';
+  // Sync ns overlay toggle
+  const nt = document.getElementById('nsToggleMusic');
+  if(nt) nt.classList.toggle('on', settings.music);
+  settings.music ? startBGMusic() : stopBGMusic();
+  saveSettings();
+  playMenuClick();
 });
 
 // ── Menu Sound Effects ─────────────────────────────────────────
@@ -7321,12 +8973,23 @@ document.querySelectorAll('.mbtn').forEach(btn=>{
 
 // ── Panel open/close ───────────────────────────────────────────
 function openPanel(id){
-  document.getElementById(id).classList.add('open');
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.classList.remove('closing');
+  el.classList.add('open');
   playMenuClick();
   if(id==='panelHighScores') renderHighScores();
 }
 function closePanel(id){
-  document.getElementById(id).classList.remove('open');
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.classList.add('closing');
+  el.classList.remove('open');
+  // Remove closing class after animation ends (with timeout fallback)
+  const cleanup = ()=>{ el.classList.remove('closing'); };
+  const onEnd = ()=>{ cleanup(); el.removeEventListener('animationend', onEnd); clearTimeout(fallback); };
+  const fallback = setTimeout(cleanup, 350); // fallback if animationend never fires
+  el.addEventListener('animationend', onEnd);
   playMenuBack();
 }
 
@@ -7336,17 +8999,37 @@ document.getElementById('btnPlay').addEventListener('click', ()=>{
   startShipPreviewAnim();
 });
 document.getElementById('btnModes').addEventListener('click',()=>{ openPanel('panelModes'); renderModeGrid(); });
-document.getElementById('btnSettings').addEventListener('click',()=>openPanel('panelSettings'));
+document.getElementById('btnSettings').addEventListener('click',()=>openSettingsOverlay());
 document.getElementById('btnAchievements').addEventListener('click',()=>{ openPanel('panelAchievements'); renderAchievements(); });
 document.getElementById('btnHighScores').addEventListener('click',()=>openPanel('panelHighScores'));
-document.getElementById('btnHowTo').addEventListener('click',()=>openPanel('panelHowTo'));
+document.getElementById('btnHowTo').addEventListener('click',()=>{ openPanel('panelHowTo'); updateHowToControls(); });
 document.getElementById('btnCredits').addEventListener('click',()=>openPanel('panelCredits'));
 document.getElementById('btnExit').addEventListener('click',()=>openPanel('panelExit'));
 
+// Controls panel — accessible from Settings
+// (button is rendered inline via onclick="openPanel('panelControls');renderControlsPanel()")
+
 // Close panels with Escape
 document.addEventListener('keydown', e=>{
-  if(e.key==='Escape' && menuOpen){
-    document.querySelectorAll('.sub-panel.open').forEach(p=>p.classList.remove('open'));
+  if(e.key==='Escape'){
+    // Close settings overlay first if open
+    const so = document.getElementById('settingsOverlay');
+    if(so && so.classList.contains('open')){
+      e.stopPropagation();
+      closeSettingsOverlay();
+      return;
+    }
+    // Close in-game controls overlay
+    const ctrlov = document.getElementById('inGameControlsOverlay');
+    if(ctrlov && ctrlov.style.display==='flex'){
+      e.stopPropagation();
+      closeInGameControls();
+      return;
+    }
+    // Close menu sub-panels
+    if(menuOpen){
+      document.querySelectorAll('.sub-panel.open').forEach(p=>p.classList.remove('open'));
+    }
   }
 });
 
@@ -7705,9 +9388,14 @@ function resetMenuShip(){
 resetMenuShip();
 
 let mbgRaf=null;
-function menuBgLoop(){
+let _mbgLastTs=0;
+function menuBgLoop(ts=0){
   if(!menuOpen){ mbgRaf=null; return; }
   mbgRaf=requestAnimationFrame(menuBgLoop);
+
+  // Delta time in seconds, clamped to 100ms to prevent spiral on tab-switch
+  const dt = Math.min((ts - _mbgLastTs) / 1000, 0.1) || (1/60);
+  _mbgLastTs = ts;
 
   const W=menuBgCanvas.width, H=menuBgCanvas.height;
   mbgCtx.clearRect(0,0,W,H);
@@ -7729,10 +9417,10 @@ function menuBgLoop(){
     mbgCtx.fillRect(n.x-n.r,n.y-n.r,n.r*2,n.r*2);
   }
 
-  // Stars (parallax drift downward)
+  // Stars (parallax drift downward) — delta-time based
   const t=Date.now()*0.001;
   for(const s of mbgStars){
-    s.y+=s.speed;
+    s.y += s.speed * dt * 60;   // speed defined as px/frame@60fps, normalised to dt
     if(s.y>H+4){ s.y=-4; s.x=Math.random()*W; }
     const a=s.brightness*(0.6+0.4*Math.sin(s.pulse+t*1.2));
     mbgCtx.shadowColor=`rgba(180,220,255,${a})`;
@@ -7744,18 +9432,19 @@ function menuBgLoop(){
   }
   mbgCtx.shadowBlur=0;
 
-  // Random shooting stars
-  if(Math.random()<0.008){
+  // Random shooting stars — spawn rate is per-frame independent
+  if(Math.random() < 0.008 * dt * 60){
     mbgShootingStars.push({
       x:Math.random()*W, y:Math.random()*(H*0.4),
       vx:3+Math.random()*4, vy:1.5+Math.random()*2.5,
-      life:1, maxLife:1
+      life:1
     });
   }
   for(let i=mbgShootingStars.length-1;i>=0;i--){
     const ss=mbgShootingStars[i];
-    ss.x+=ss.vx*3; ss.y+=ss.vy*3;
-    ss.life-=0.04;
+    ss.x += ss.vx * dt * 60 * 3;
+    ss.y += ss.vy * dt * 60 * 3;
+    ss.life -= 0.04 * dt * 60;  // ~0.04 per frame at 60fps
     if(ss.life<=0||ss.x>W+50){ mbgShootingStars.splice(i,1); continue; }
     mbgCtx.save();
     mbgCtx.globalAlpha=ss.life;
@@ -7771,8 +9460,8 @@ function menuBgLoop(){
   }
 
   // Flying player ship across the menu
-  menuShip.x+=menuShip.speed;
-  menuShip.y+=Math.sin(t*0.6)*0.4;
+  menuShip.x += menuShip.speed * dt * 60;
+  menuShip.y += Math.sin(t*0.6)*0.4;
   if(menuShip.x>W+140) resetMenuShip();
   drawMenuShip(menuShip.x, menuShip.y, menuShip.angle, W);
 }
@@ -7830,7 +9519,7 @@ window.addEventListener('resize',()=>{
   // Resize game canvas to fill window
   canvas.width  = window.innerWidth;
   canvas.height = window.innerHeight;
-  // Note: WIDTH/HEIGHT are const so positions scale on next frame naturally
+  // WIDTH/HEIGHT are live getters — automatically reflect the new size
   // Re-centre player on resize
   if(typeof player !== 'undefined'){
     player.x = Math.min(player.x, canvas.width  - player.width);
