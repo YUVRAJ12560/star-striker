@@ -1196,7 +1196,7 @@ const WIDTH  = canvas.width;
 const HEIGHT = canvas.height;
 
 let score=0;
-let lives=10;
+let lives=3;
 let coins=0;       // spendable currency (separate from score)
 let gameOver=false;
 let paused=false;
@@ -1216,7 +1216,11 @@ const LEVEL_UP_DURATION=2500;
 // Enemies that slip past the bottom cost a life but do NOT count
 // as kills — the player must shoot them to progress.
 
-function waveSize(lvl){ return 8 + (lvl-1)*4; }  // 8, 12, 16, 20 …
+function waveSize(lvl){
+  // Levels 1-5: small waves (easy), then grow gradually
+  if(lvl<=5) return 6 + (lvl-1)*1;          // 6,7,8,9,10
+  return 10 + (lvl-6)*3;                     // 10,13,16,19… after level 5
+}
 
 let waveKilled=0;    // kills by player this wave
 
@@ -1591,7 +1595,7 @@ const SHIP_DEFS = [
     cockpitColor:'#001f3f',
     shape:   'standard',
     // stats
-    lives:       10,
+    lives:       3,
     speed:       7,
     fireCooldown:180,
     bulletDamage:1,
@@ -1611,7 +1615,7 @@ const SHIP_DEFS = [
     accentColor: '#ffffff',
     cockpitColor:'#0a1a00',
     shape:   'arrow',
-    lives:       10,
+    lives:       2,
     speed:       12,
     fireCooldown:140,
     bulletDamage:1,
@@ -1630,7 +1634,7 @@ const SHIP_DEFS = [
     accentColor: '#ffaa66',
     cockpitColor:'#1a0500',
     shape:   'wide',
-    lives:       10,
+    lives:       5,
     speed:       4.5,
     fireCooldown:240,
     bulletDamage:2,
@@ -1649,7 +1653,7 @@ const SHIP_DEFS = [
     accentColor: '#ff88ff',
     cockpitColor:'#0f0020',
     shape:   'needle',
-    lives:       10,
+    lives:       2,
     speed:       6,
     fireCooldown:280,
     bulletDamage:4,
@@ -2200,24 +2204,43 @@ function drawDmgNumbers(){
   ctx.textAlign="left";
 }
 
+// ── Ship tilt animation state ──────────────────────────────────
+let shipTilt       = 0;       // current tilt in radians (positive = right lean)
+let shipTiltTarget = 0;       // target tilt based on keys pressed
+const TILT_MAX     = 0.32;    // max tilt angle (~18°)
+const TILT_SPEED   = 0.055;   // interpolation step per frame
+
+// ── Motion blur ghost trail ────────────────────────────────────
+const shipGhosts = [];        // {x, y, alpha, tilt}
+let   _ghostTimer = 0;
+
 // ── Engine exhaust particles ────────────────────────────────────
 const exhaustParticles=[];
 
-function spawnExhaust(){
-  if(exhaustParticles.length>40) return;   // hard cap
-  const cx=player.x+player.width/2;
-  const py=player.y+player.height;
-  // Single centre jet (cheaper than two)
-  exhaustParticles.push({
-    x:cx+(Math.random()-0.5)*6,
-    y:py+(Math.random()-0.5)*3,
-    vx:(Math.random()-0.5)*0.8,
-    vy:1.2+Math.random()*2,
-    size:1.2+Math.random()*2,
-    life:14+Math.floor(Math.random()*8),
-    maxLife:22,
-    hue:Math.random()<0.5?30:15
-  });
+function spawnExhaust(moving){
+  const cap = moving ? 80 : 40;
+  if(exhaustParticles.length > cap) return;
+  const cx = player.x + player.width/2;
+  const py = player.y + player.height;
+
+  // More particles, bigger and faster while moving
+  const count = moving ? 3 : 1;
+  for(let i = 0; i < count; i++){
+    const speedMult = moving ? 1.8 : 1;
+    exhaustParticles.push({
+      x:  cx + (Math.random()-0.5)*8,
+      y:  py + (Math.random()-0.5)*4,
+      vx: (Math.random()-0.5)*(moving ? 1.6 : 0.8),
+      vy: (1.2 + Math.random()*2) * speedMult,
+      size: (1.5 + Math.random()*2.5) * (moving ? 1.4 : 1),
+      life: (14 + Math.floor(Math.random()*10)) * (moving ? 1.3 : 1),
+      maxLife: moving ? 30 : 22,
+      hue: moving
+        ? (Math.random() < 0.6 ? 45 : 25)   // brighter orange-white when moving
+        : (Math.random() < 0.5 ? 30 : 15),
+      bright: moving
+    });
+  }
 }
 
 function updateExhaust(){
@@ -2225,23 +2248,30 @@ function updateExhaust(){
     const p=exhaustParticles[i];
     p.x+=p.vx;
     p.y+=p.vy;
-    p.vy*=1.05;
-    p.size*=0.93;
+    p.vy*= p.bright ? 1.07 : 1.05;
+    p.size*=0.92;
     p.life--;
-    if(p.life<=0||p.size<0.3) exhaustParticles.splice(i,1);
+    if(p.life<=0||p.size<0.25) exhaustParticles.splice(i,1);
   }
 }
 
 function drawExhaust(){
   for(const p of exhaustParticles){
-    const alpha=(p.life/p.maxLife)*0.7;
-    ctx.globalAlpha=alpha;
-    ctx.fillStyle=`hsla(${p.hue},100%,65%,1)`;
+    const alpha = (p.life / p.maxLife) * (p.bright ? 0.88 : 0.7);
+    ctx.globalAlpha = alpha;
+    if(p.bright){
+      // Hot white-orange core with glow
+      ctx.shadowColor = `hsla(${p.hue},100%,80%,1)`;
+      ctx.shadowBlur  = 8;
+    }
+    ctx.fillStyle = `hsla(${p.hue},100%,${p.bright?78:65}%,1)`;
     ctx.beginPath();
-    ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
     ctx.fill();
+    if(p.bright) ctx.shadowBlur = 0;
   }
   ctx.globalAlpha=1;
+  ctx.shadowBlur=0;
 }
 
 // Called after every enemy kill — triggers boss once kill target is reached
@@ -2368,7 +2398,7 @@ let lastDmgPowerup=Date.now()+(28000+Math.random()*12000); // first dmg boost af
 // HEALTH POWER-UP STATE
 //=========================
 
-const MAX_LIVES=50;
+const MAX_LIVES=5;
 const healthPowerups=[];
 const healParticles=[];
 
@@ -2393,6 +2423,61 @@ const scorePopups=[];   // floating "+100" animations
 
 let lastCoinPowerup=Date.now()+(14000+Math.random()*8000); // first coin after 14-22s
 
+// ── Draw ship ghosts (motion blur) ───────────────────────────
+function drawShipGhosts(){
+  for(let gi = 0; gi < shipGhosts.length; gi++){
+    const g = shipGhosts[gi];
+    const ship = selectedShip;
+    const cx = g.x + player.width/2;
+    const py = g.y;
+    const pw = player.width;
+    const ph = player.height;
+
+    ctx.save();
+    ctx.globalAlpha = g.alpha * (gi+1) / shipGhosts.length * 0.55;
+    ctx.translate(cx, py + ph*0.5);
+    ctx.rotate(g.tilt);
+    ctx.translate(-cx, -(py + ph*0.5));
+
+    ctx.shadowColor = ship.glowColor;
+    ctx.shadowBlur  = 6;
+    ctx.fillStyle   = ship.bodyColor;
+
+    // Draw simplified body shape for ghost
+    ctx.beginPath();
+    if(ship.shape==='standard'){
+      ctx.moveTo(cx, py);
+      ctx.lineTo(cx+pw*0.38, py+ph*0.55);
+      ctx.lineTo(cx+pw*0.5,  py+ph);
+      ctx.lineTo(cx-pw*0.5,  py+ph);
+      ctx.lineTo(cx-pw*0.38, py+ph*0.55);
+    } else if(ship.shape==='arrow'){
+      ctx.moveTo(cx, py);
+      ctx.lineTo(cx+pw*0.28, py+ph*0.45);
+      ctx.lineTo(cx+pw*0.42, py+ph);
+      ctx.lineTo(cx-pw*0.42, py+ph);
+      ctx.lineTo(cx-pw*0.28, py+ph*0.45);
+    } else if(ship.shape==='wide'){
+      ctx.moveTo(cx, py+ph*0.1);
+      ctx.lineTo(cx+pw*0.5,  py+ph*0.45);
+      ctx.lineTo(cx+pw*0.6,  py+ph);
+      ctx.lineTo(cx-pw*0.6,  py+ph);
+      ctx.lineTo(cx-pw*0.5,  py+ph*0.45);
+    } else {
+      ctx.moveTo(cx, py);
+      ctx.lineTo(cx+pw*0.22, py+ph*0.6);
+      ctx.lineTo(cx+pw*0.3,  py+ph);
+      ctx.lineTo(cx-pw*0.3,  py+ph);
+      ctx.lineTo(cx-pw*0.22, py+ph*0.6);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+  ctx.globalAlpha = 1;
+  ctx.shadowBlur  = 0;
+}
+
 function drawPlayer(){
 
 const cx = player.x + player.width/2;
@@ -2400,6 +2485,15 @@ const py = player.y;
 const pw = player.width;
 const ph = player.height;
 const ship = selectedShip;
+
+// Determine if moving for enhanced effects
+const isMoving = keys["ArrowLeft"]||keys["ArrowRight"]||keys["ArrowUp"]||keys["ArrowDown"];
+
+// ── Apply tilt transform around ship centre ────────────────
+ctx.save();
+ctx.translate(cx, py + ph*0.5);
+ctx.rotate(shipTilt);
+ctx.translate(-cx, -(py + ph*0.5));
 
 // ── Power-up auras ─────────────────────────────────────────
 // Rapid fire green glow
@@ -2468,12 +2562,21 @@ ctx.restore();
 }
 
 // ── Engine flame ───────────────────────────────────────────
-const flameH = 12 + Math.random()*10;
+const flameH = isMoving
+  ? 20 + Math.random()*18    // bigger, livelier when moving
+  :  12 + Math.random()*10;
+const flameColor0 = isMoving ? "rgba(255,240,100,1)"    : "rgba(255,200,50,0.95)";
+const flameColor1 = isMoving ? "rgba(255,120,0,0.85)"   : "rgba(255,80,0,0.7)";
 const grad = ctx.createLinearGradient(cx, py+ph, cx, py+ph+flameH);
-grad.addColorStop(0,"rgba(255,200,50,0.95)");
-grad.addColorStop(0.5,"rgba(255,80,0,0.7)");
+grad.addColorStop(0, flameColor0);
+grad.addColorStop(0.5, flameColor1);
 grad.addColorStop(1,"rgba(255,50,0,0)");
 ctx.fillStyle=grad;
+if(isMoving){
+  // Extra glow when moving
+  ctx.shadowColor = "#ff8800";
+  ctx.shadowBlur  = 22;
+}
 if(ship.shape==='wide'){
   // Side thrusters too
   [cx-pw*0.42, cx, cx+pw*0.42].forEach(tx=>{
@@ -2490,6 +2593,7 @@ if(ship.shape==='wide'){
   ctx.lineTo(cx+10, py+ph-5);
   ctx.closePath(); ctx.fill();
 }
+ctx.shadowBlur = 0;
 
 // ── Ship body — shape depends on selected ship ─────────────
 ctx.shadowColor = ship.glowColor;
@@ -2604,21 +2708,50 @@ if(ship.shape==='standard'||ship.shape==='arrow'){
 }
 ctx.stroke();
 
+// ── End tilt transform ──────────────────────────────────────
+ctx.restore();
+
 }
 
 function movePlayer(){
 
-if(keys["ArrowLeft"] && player.x>0)
-player.x-=player.speed;
+const movingLeft  = keys["ArrowLeft"]  && player.x > 0;
+const movingRight = keys["ArrowRight"] && player.x < WIDTH - player.width;
+const movingUp    = keys["ArrowUp"]    && player.y > 0;
+const movingDown  = keys["ArrowDown"]  && player.y < HEIGHT - player.height;
 
-if(keys["ArrowRight"] && player.x<WIDTH-player.width)
-player.x+=player.speed;
+if(movingLeft)  player.x -= player.speed;
+if(movingRight) player.x += player.speed;
+if(movingUp)    player.y -= player.speed;
+if(movingDown)  player.y += player.speed;
 
-if(keys["ArrowUp"] && player.y>0)
-player.y-=player.speed;
+// ── Tilt target ───────────────────────────────────────────────
+if(movingLeft && !movingRight)       shipTiltTarget = -TILT_MAX;
+else if(movingRight && !movingLeft)  shipTiltTarget =  TILT_MAX;
+else                                  shipTiltTarget =  0;
 
-if(keys["ArrowDown"] && player.y<HEIGHT-player.height)
-player.y+=player.speed;
+// Smooth interpolation toward target
+shipTilt += (shipTiltTarget - shipTilt) * TILT_SPEED;
+if(Math.abs(shipTilt) < 0.001) shipTilt = 0;
+
+// ── Motion blur ghost trail ───────────────────────────────────
+const isMoving = movingLeft || movingRight || movingUp || movingDown;
+if(isMoving){
+  _ghostTimer++;
+  if(_ghostTimer % 3 === 0){
+    shipGhosts.push({ x: player.x, y: player.y, alpha: 0.38, tilt: shipTilt });
+    if(shipGhosts.length > 6) shipGhosts.shift();
+  }
+} else {
+  _ghostTimer = 0;
+  // Fade out ghosts faster when stopped
+}
+
+// Age ghosts
+for(let i = shipGhosts.length-1; i >= 0; i--){
+  shipGhosts[i].alpha -= 0.045;
+  if(shipGhosts[i].alpha <= 0) shipGhosts.splice(i, 1);
+}
 
 }
 
@@ -2716,17 +2849,50 @@ if(bossPhase==="wave"){
 
 // ── Boss fight indicator ──────────────────────────────────
 if(bossPhase==="fighting" && boss){
-  const pulse=0.7+0.3*Math.sin(Date.now()*0.008);
-  ctx.textAlign="center";
-  ctx.shadowColor=boss.pal.glow;
-  ctx.shadowBlur=20;
-  ctx.globalAlpha=pulse;
-  ctx.fillStyle=boss.pal.dome;
-  ctx.font="bold 18px Arial";
-  ctx.fillText("⚔ BOSS FIGHT — LV"+boss.level+" ⚔", canvas.width/2, 70);
-  ctx.globalAlpha=1;
-  ctx.shadowBlur=0;
-  ctx.textAlign="left";
+  const pulse     = 0.7+0.3*Math.sin(Date.now()*0.008);
+  const enrageHUD = boss.hpPhase >= 2;
+  const midHUD    = boss.hpPhase === 1;
+  const hudColor  = enrageHUD ? '#ff2200' : midHUD ? '#ff9900' : boss.pal.dome;
+  const hudGlow   = enrageHUD ? '#ff0000' : midHUD ? '#ff6600' : boss.pal.glow;
+  ctx.textAlign   = 'center';
+  ctx.shadowColor = hudGlow;
+  ctx.shadowBlur  = enrageHUD ? 28 : 16;
+  ctx.globalAlpha = pulse;
+  ctx.fillStyle   = hudColor;
+  ctx.font        = `bold ${enrageHUD?20:18}px Arial`;
+  const phaseLabel = enrageHUD ? ' ☠ ENRAGED' : midHUD ? ' ⚡ POWERED UP' : '';
+  ctx.fillText(`⚔ BOSS FIGHT — LV${boss.level}${phaseLabel} ⚔`, canvas.width/2, 70);
+  ctx.globalAlpha = 1;
+  ctx.shadowBlur  = 0;
+
+  // Screen-edge danger pulse when enraged
+  if(enrageHUD){
+    const edgePulse = 0.08 + 0.06*Math.sin(Date.now()*0.015);
+    const edgeGrd   = ctx.createRadialGradient(
+      canvas.width/2, canvas.height/2, canvas.height*0.3,
+      canvas.width/2, canvas.height/2, canvas.height*0.95
+    );
+    edgeGrd.addColorStop(0,'rgba(0,0,0,0)');
+    edgeGrd.addColorStop(1,`rgba(200,0,0,${edgePulse})`);
+    ctx.fillStyle = edgeGrd;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+  }
+
+  // Charging indicator under the boss label
+  if(boss.chargeTimer > 0 && boss.chargeMax > 0){
+    const chargePct = 1 - boss.chargeTimer/boss.chargeMax;
+    const cBarW=220, cBarH=6, cBarX=canvas.width/2-cBarW/2;
+    ctx.shadowBlur  = 0;
+    ctx.fillStyle   = 'rgba(255,255,255,0.12)';
+    ctx.fillRect(cBarX, 76, cBarW, cBarH);
+    ctx.shadowColor = boss.pal.eyes;
+    ctx.shadowBlur  = 8;
+    ctx.fillStyle   = boss.pal.eyes;
+    ctx.fillRect(cBarX, 76, cBarW*chargePct, cBarH);
+    ctx.shadowBlur  = 0;
+  }
+
+  ctx.textAlign = 'left';
 }
 
 // ── Active power-up countdowns ────────────────────────────
@@ -3085,7 +3251,7 @@ canvas.addEventListener('click',e=>{
 function restartGame(){
 
 score=0;
-lives=10;
+lives=3;
 coins=0;
 gameOver=false;
 paused=false;
@@ -3155,6 +3321,20 @@ autoKillExpiry = 0;
 autoKillPowerups.length = 0;
 zapEffects.length = 0;
 lastAutoKillPowerup = Date.now()+(40000+Math.random()*20000);
+
+// ── Reset ship tilt / motion blur ────────────────────────────
+shipTilt       = 0;
+shipTiltTarget = 0;
+shipGhosts.length = 0;
+_ghostTimer    = 0;
+
+// ── Reset combo system ───────────────────────────────────────
+comboKills      = 0;
+comboMultiplier = 1;
+comboTierIndex  = -1;
+comboDisplay    = null;
+comboLastKillTime = 0;
+comboPopups.length = 0;
 
 // ── Mode-specific overrides ──────────────────────────────────
 applyModeRules();
@@ -3283,6 +3463,115 @@ gain.connect(audioCtx.destination);
 osc.start(audioCtx.currentTime+i*0.1);
 osc.stop(audioCtx.currentTime+i*0.1+0.35);
 });
+}
+
+function playBossPhaseSound(phase){
+  if(!settings.sfx) return;
+  try{
+    // Heavy descending impact — phase 1 = lower, phase 2 = lowest+distorted
+    const baseFreqs = phase===2 ? [160,120,80,55] : [220,170,130,90];
+    baseFreqs.forEach((f,i)=>{
+      const o=audioCtx.createOscillator();
+      const g=audioCtx.createGain();
+      o.type= i%2===0 ? 'sawtooth' : 'square';
+      o.frequency.setValueAtTime(f*1.4, audioCtx.currentTime+i*0.08);
+      o.frequency.exponentialRampToValueAtTime(f*0.6, audioCtx.currentTime+i*0.08+0.3);
+      g.gain.setValueAtTime(0, audioCtx.currentTime+i*0.08);
+      g.gain.linearRampToValueAtTime(0.18*settings.sfxVol, audioCtx.currentTime+i*0.08+0.04);
+      g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+i*0.08+0.5);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(audioCtx.currentTime+i*0.08);
+      o.stop(audioCtx.currentTime+i*0.08+0.5);
+    });
+  }catch(e){}
+}
+
+function playBossChargeSound(duration){
+  if(!settings.sfx) return;
+  try{
+    // Rising electric whine proportional to charge duration
+    const o=audioCtx.createOscillator();
+    const g=audioCtx.createGain();
+    o.type='sawtooth';
+    const dur = Math.max(0.3, duration/1000);
+    o.frequency.setValueAtTime(120, audioCtx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(900, audioCtx.currentTime+dur*0.9);
+    g.gain.setValueAtTime(0.01, audioCtx.currentTime);
+    g.gain.linearRampToValueAtTime(0.12*settings.sfxVol, audioCtx.currentTime+dur*0.7);
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+dur);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(audioCtx.currentTime);
+    o.stop(audioCtx.currentTime+dur);
+  }catch(e){}
+}
+
+function playBossAttackSound(type){
+  if(!settings.sfx) return;
+  try{
+    switch(type){
+      case 'basic':{
+        const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+        o.type='square'; o.frequency.setValueAtTime(380,audioCtx.currentTime);
+        o.frequency.exponentialRampToValueAtTime(120,audioCtx.currentTime+0.18);
+        g.gain.setValueAtTime(0.09*settings.sfxVol,audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+0.18);
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(); o.stop(audioCtx.currentTime+0.18);
+        break;
+      }
+      case 'spiral':
+      case 'burst':
+      case 'blossom':{
+        [200,350,500,700].forEach((f,i)=>{
+          const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+          o.type='sawtooth'; o.frequency.value=f;
+          g.gain.setValueAtTime(0,audioCtx.currentTime+i*0.04);
+          g.gain.linearRampToValueAtTime(0.14*settings.sfxVol,audioCtx.currentTime+i*0.04+0.03);
+          g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+i*0.04+0.28);
+          o.connect(g); g.connect(audioCtx.destination);
+          o.start(audioCtx.currentTime+i*0.04);
+          o.stop(audioCtx.currentTime+i*0.04+0.28);
+        });
+        break;
+      }
+      case 'homing':{
+        [440,330,220].forEach((f,i)=>{
+          const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+          o.type='triangle'; o.frequency.value=f;
+          g.gain.setValueAtTime(0,audioCtx.currentTime+i*0.07);
+          g.gain.linearRampToValueAtTime(0.1*settings.sfxVol,audioCtx.currentTime+i*0.07+0.03);
+          g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+i*0.07+0.3);
+          o.connect(g); g.connect(audioCtx.destination);
+          o.start(audioCtx.currentTime+i*0.07);
+          o.stop(audioCtx.currentTime+i*0.07+0.3);
+        });
+        break;
+      }
+      case 'laser':{
+        const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+        o.type='sawtooth';
+        o.frequency.setValueAtTime(800,audioCtx.currentTime);
+        o.frequency.linearRampToValueAtTime(1600,audioCtx.currentTime+0.1);
+        o.frequency.setValueAtTime(600,audioCtx.currentTime+0.1);
+        g.gain.setValueAtTime(0.16*settings.sfxVol,audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+0.5);
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(); o.stop(audioCtx.currentTime+0.5);
+        break;
+      }
+      case 'shockwave':{
+        const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+        o.type='sine';
+        o.frequency.setValueAtTime(80,audioCtx.currentTime);
+        o.frequency.exponentialRampToValueAtTime(30,audioCtx.currentTime+0.5);
+        g.gain.setValueAtTime(0.22*settings.sfxVol,audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+0.5);
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(); o.stop(audioCtx.currentTime+0.5);
+        break;
+      }
+    }
+  }catch(e){}
 }
 
 //=========================
@@ -3464,9 +3753,16 @@ ctx.shadowBlur=0;
 
 function spawnEnemy(){
 
-// Each level increases base speed by 0.4 and adds a small random bonus
-const nmMult = nightmareActive ? 1.45 : 1;  // 45% faster in Nightmare
-const baseSpeed=(2+(level-1)*0.4)*nmMult;
+// Levels 1-5: slow enemies, after that ramp up
+const nmMult = nightmareActive ? 1.4 : 1;
+let baseSpeed;
+if(level<=5){
+  // Very easy — barely moves faster each level
+  baseSpeed = (1.2 + (level-1)*0.15) * nmMult;
+} else {
+  // After level 5: ramp more aggressively
+  baseSpeed = (2.0 + (level-5)*0.35) * nmMult;
+}
 
 enemies.push({
 
@@ -3496,8 +3792,13 @@ if(gameOver) return;
 // Only spawn during the wave phase
 if(bossPhase!=="wave") return;
 
-// Spawn interval shrinks with each level (floor at 300ms)
-const spawnInterval=Math.max(300, 900-(level-1)*80);
+// Spawn interval — levels 1-5: slow spawning (easy), then tightens
+let spawnInterval;
+if(level<=5){
+  spawnInterval = 1400 - (level-1)*80;       // 1400,1320,1240,1160,1080 ms
+} else {
+  spawnInterval = Math.max(280, 1080 - (level-5)*100); // ramps to 280ms floor
+}
 
 // Keep spawning new enemies until the kill target has been reached
 if(waveKilled<waveSize(level) && Date.now()-lastEnemy>spawnInterval){
@@ -3521,6 +3822,7 @@ enemies.splice(i,1);
 if(!shieldActive){
 lives--;
 achOnPlayerHit();   // track damage for Untouchable achievement
+comboOnPlayerHit(); // reset combo on hit
 triggerShake(5,8);
 
 if(lives<=0){
@@ -3558,8 +3860,9 @@ ctx.translate(cx, cy);
 
 // ── Engine exhaust glow (bottom) ──
 const flicker=0.7+0.3*Math.sin(Date.now()*0.02+e.x);
+// Share one shadowBlur setting for exhaust + body to halve state changes
 ctx.shadowColor=t.glow;
-ctx.shadowBlur=16*flicker;
+ctx.shadowBlur=10;
 const exGrad=ctx.createRadialGradient(0, h*0.38, 2, 0, h*0.38, 10);
 exGrad.addColorStop(0,"rgba(255,180,60,0.9)");
 exGrad.addColorStop(0.5,"rgba(255,80,0,0.5)");
@@ -3568,11 +3871,8 @@ ctx.fillStyle=exGrad;
 ctx.beginPath();
 ctx.ellipse(0, h*0.38, 7*flicker, 9*flicker, 0, 0, Math.PI*2);
 ctx.fill();
-ctx.shadowBlur=0;
 
 // ── Main body (angular alien fighter) ──
-ctx.shadowColor=t.glow;
-ctx.shadowBlur=10;
 ctx.fillStyle=t.body;
 ctx.beginPath();
 ctx.moveTo(0,       -h*0.48);   // nose pointing DOWN (enemy moves down)
@@ -3605,13 +3905,10 @@ ctx.fill();
 // ── Wing tip accents ──
 ctx.strokeStyle=t.glow;
 ctx.lineWidth=1.5;
-ctx.shadowColor=t.glow;
-ctx.shadowBlur=8;
+// Wing tip accents share the body shadow (already set to t.glow / 10)
 ctx.beginPath();
 ctx.moveTo(-w*0.52, h*0.28);
 ctx.lineTo(-w*0.44, h*0.10);
-ctx.stroke();
-ctx.beginPath();
 ctx.moveTo( w*0.52, h*0.28);
 ctx.lineTo( w*0.44, h*0.10);
 ctx.stroke();
@@ -3626,25 +3923,28 @@ ctx.strokeStyle=t.eye;
 ctx.lineWidth=1.2;
 ctx.stroke();
 
-// ── Menacing eyes (two glowing dots flanking the cockpit) ──
+// ── Menacing eyes — batch both into one fill call ──
 const eyeY=-h*0.22;
 const eyeR=3;
 ctx.shadowColor=t.eye;
-ctx.shadowBlur=14;
+ctx.shadowBlur=10;
 ctx.fillStyle=t.eye;
-ctx.beginPath(); ctx.arc(-w*0.18, eyeY, eyeR, 0, Math.PI*2); ctx.fill();
-ctx.beginPath(); ctx.arc( w*0.18, eyeY, eyeR, 0, Math.PI*2); ctx.fill();
+ctx.beginPath();
+ctx.arc(-w*0.18, eyeY, eyeR, 0, Math.PI*2);
+ctx.arc( w*0.18, eyeY, eyeR, 0, Math.PI*2);
+ctx.fill();
 
 // Inner bright pupils
-ctx.fillStyle="#ffffff";
 ctx.shadowBlur=0;
-ctx.beginPath(); ctx.arc(-w*0.18, eyeY, 1.2, 0, Math.PI*2); ctx.fill();
-ctx.beginPath(); ctx.arc( w*0.18, eyeY, 1.2, 0, Math.PI*2); ctx.fill();
+ctx.fillStyle="#ffffff";
+ctx.beginPath();
+ctx.arc(-w*0.18, eyeY, 1.2, 0, Math.PI*2);
+ctx.arc( w*0.18, eyeY, 1.2, 0, Math.PI*2);
+ctx.fill();
 
 // ── Body outline ──
 ctx.strokeStyle=`rgba(255,255,255,0.18)`;
 ctx.lineWidth=1;
-ctx.shadowBlur=0;
 ctx.beginPath();
 ctx.moveTo(0,       -h*0.48);
 ctx.lineTo( w*0.28,  -h*0.1);
@@ -3801,10 +4101,11 @@ spawnDmgNumber(e.x+e.width/2, e.y, b.damage||1, b.crit||(b.damage||1)>=2);
 
 if(e.health<=0){
 
-score+=10;
+score+=10 * comboMultiplier;
 coins+=5;   // earn 5 coins per enemy kill
 waveKilled++;
 achOnEnemyKill();
+comboOnEnemyKill(e.x+e.width/2, e.y+e.height/2);
 checkWaveComplete();
 
 createExplosion(
@@ -4830,17 +5131,31 @@ function updateAutoKillPowerups(){
       const px = player.x + player.width/2;
       const py = player.y;
 
-      // Spawn zap line
-      zapEffects.push({
-        x1: px, y1: py,
-        x2: ex, y2: ey,
-        life: 6, maxLife: 6,
-        color: `hsl(${180+Math.random()*60},100%,70%)`,
-      });
+      // Spawn zap line — cap total zap effects to avoid draw spikes
+      if(zapEffects.length < 20){
+        const dx2 = ex - px, dy2 = ey - py;
+        const segs2 = 5;
+        const jitter = [];
+        for(let s=1; s<segs2; s++){
+          const t2 = s/segs2;
+          jitter.push({
+            x: px + dx2*t2 + (Math.random()-0.5)*22,
+            y: py + dy2*t2 + (Math.random()-0.5)*22,
+          });
+        }
+        zapEffects.push({
+          x1: px, y1: py,
+          x2: ex, y2: ey,
+          life: 6, maxLife: 6,
+          color: `hsl(${180+Math.random()*60},100%,70%)`,
+          jitter,
+        });
+      }
 
-      score += 10;
+      score += 10 * comboMultiplier;
       waveKilled++;
       achOnEnemyKill();
+      comboOnEnemyKill(ex, ey);
       createExplosion(ex, ey);
       enemies.splice(i, 1);
     }
@@ -4931,27 +5246,21 @@ function drawZapEffects(){
     ctx.save();
     ctx.globalAlpha = alpha;
     ctx.shadowColor = z.color;
-    ctx.shadowBlur  = 16;
+    ctx.shadowBlur  = 12;
     ctx.strokeStyle = z.color;
     ctx.lineWidth   = 2.5*(0.5+alpha*0.5);
 
-    // Draw a jagged lightning path between the two points
-    const dx = z.x2 - z.x1;
-    const dy = z.y2 - z.y1;
-    const segs = 5;
+    // Draw the pre-baked jagged lightning path (no Math.random per frame)
     ctx.beginPath();
     ctx.moveTo(z.x1, z.y1);
-    for(let s=1; s<segs; s++){
-      const t  = s/segs;
-      const jx = z.x1 + dx*t + (Math.random()-0.5)*22;
-      const jy = z.y1 + dy*t + (Math.random()-0.5)*22;
-      ctx.lineTo(jx, jy);
+    if(z.jitter){
+      for(const pt of z.jitter) ctx.lineTo(pt.x, pt.y);
     }
     ctx.lineTo(z.x2, z.y2);
     ctx.stroke();
 
     // Hit flash
-    ctx.shadowBlur  = 20;
+    ctx.shadowBlur  = 16;
     ctx.fillStyle   = '#ffffff';
     ctx.beginPath();
     ctx.arc(z.x2, z.y2, 5+alpha*4, 0, Math.PI*2);
@@ -4996,19 +5305,227 @@ ctx.textAlign="left";
 }
 
 //=========================
+// COMBO KILL SYSTEM
+//=========================
+
+// Combo thresholds and their multipliers / bonuses
+const COMBO_TIERS = [
+  { kills:  2, mult:  2, bonus:  20, label:'COMBO ×2',  color:'#00ff88', glow:'#00cc66' },
+  { kills:  5, mult:  3, bonus:  50, label:'COMBO ×3',  color:'#ffee00', glow:'#ccbb00' },
+  { kills: 10, mult:  5, bonus: 100, label:'COMBO ×5',  color:'#ff9900', glow:'#cc6600' },
+  { kills: 20, mult: 10, bonus: 250, label:'COMBO ×10', color:'#ff3300', glow:'#ff0000' },
+  { kills: 35, mult: 20, bonus: 500, label:'COMBO ×20', color:'#ff00ff', glow:'#cc00cc' },
+];
+const COMBO_TIMEOUT = 3000; // ms between kills before combo resets
+
+let comboKills       = 0;    // consecutive kills this combo chain
+let comboMultiplier  = 1;    // current score multiplier
+let comboLastKillTime= 0;    // timestamp of last combo kill
+let comboTierIndex   = -1;   // current tier index (-1 = no combo)
+let comboDisplay     = null; // active combo tier data being shown
+let comboDisplayTimer= 0;    // how long the combo label has been showing (ms)
+let comboPopups      = [];   // {text, x, y, life, maxLife, vy, color, glow, scale}
+
+function comboOnEnemyKill(ex, ey){
+  const now = Date.now();
+  // If too much time has passed, reset combo
+  if(comboLastKillTime > 0 && now - comboLastKillTime > COMBO_TIMEOUT){
+    resetCombo();
+  }
+  comboLastKillTime = now;
+  comboKills++;
+
+  // Check if we've crossed into a higher tier
+  let newTier = -1;
+  for(let i = COMBO_TIERS.length-1; i >= 0; i--){
+    if(comboKills >= COMBO_TIERS[i].kills){ newTier = i; break; }
+  }
+
+  if(newTier > comboTierIndex){
+    // Level up! Apply bonus and update display
+    comboTierIndex      = newTier;
+    const tier          = COMBO_TIERS[newTier];
+    comboMultiplier     = tier.mult;
+    comboDisplay        = tier;
+    comboDisplayTimer   = Date.now();
+
+    // Bonus score & coins for reaching this tier
+    score  += tier.bonus;
+    coins  += Math.floor(tier.bonus * 0.3);
+
+    // Spawn combo popup at enemy position
+    comboPopups.push({
+      text:     tier.label,
+      x:        ex,
+      y:        ey - 20,
+      life:     90,
+      maxLife:  90,
+      vy:       2.2,
+      color:    tier.color,
+      glow:     tier.glow,
+      scale:    1.6,
+    });
+
+    // Also spawn bonus text
+    comboPopups.push({
+      text:     '+' + tier.bonus + ' BONUS!',
+      x:        ex + (Math.random()-0.5)*30,
+      y:        ey - 48,
+      life:     70,
+      maxLife:  70,
+      vy:       1.6,
+      color:    '#ffffff',
+      glow:     tier.glow,
+      scale:    1.0,
+    });
+
+    playComboSound(newTier);
+  }
+}
+
+function comboOnPlayerHit(){
+  resetCombo();
+}
+
+function resetCombo(){
+  comboKills      = 0;
+  comboMultiplier = 1;
+  comboTierIndex  = -1;
+  comboDisplay    = null;
+}
+
+function checkComboTimeout(){
+  if(comboKills > 0 && comboLastKillTime > 0){
+    if(Date.now() - comboLastKillTime > COMBO_TIMEOUT){
+      resetCombo();
+    }
+  }
+}
+
+function playComboSound(tierIdx){
+  try{
+    // Rising arpeggio — higher tiers = higher pitch
+    const baseFreqs = [
+      [330, 440, 550],
+      [440, 550, 660, 880],
+      [523, 659, 784, 1047],
+      [659, 784, 1047, 1319],
+      [784, 1047, 1319, 1568, 1976],
+    ];
+    const freqs = baseFreqs[Math.min(tierIdx, baseFreqs.length-1)];
+    freqs.forEach((f, i)=>{
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = i % 2 === 0 ? 'square' : 'triangle';
+      o.frequency.value = f;
+      const t = audioCtx.currentTime + i * 0.07;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.12 * settings.sfxVol, t + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(t); o.stop(t + 0.3);
+    });
+  }catch(e){}
+}
+
+function updateComboPopups(){
+  for(let i = comboPopups.length-1; i >= 0; i--){
+    const p = comboPopups[i];
+    p.y   -= p.vy;
+    p.vy  *= 0.96;
+    p.life--;
+    p.scale += (1.0 - p.scale) * 0.12; // settle toward 1
+    if(p.life <= 0) comboPopups.splice(i, 1);
+  }
+}
+
+function drawComboOverlay(){
+  // ── Floating combo popup texts ─────────────────────────────
+  for(const p of comboPopups){
+    const alpha = Math.min(1, p.life / p.maxLife * 2);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(p.x, p.y);
+    ctx.scale(p.scale, p.scale);
+    ctx.shadowColor = p.glow;
+    ctx.shadowBlur  = 22;
+    ctx.fillStyle   = p.color;
+    ctx.font        = `bold ${Math.round(26 * p.scale)}px Arial`;
+    ctx.textAlign   = 'center';
+    ctx.fillText(p.text, 0, 0);
+    // White highlight pass
+    ctx.shadowBlur  = 0;
+    ctx.fillStyle   = 'rgba(255,255,255,0.6)';
+    ctx.font        = `bold ${Math.round(26 * p.scale)}px Arial`;
+    ctx.fillText(p.text, -1, -1);
+    ctx.restore();
+  }
+
+  // ── Persistent combo indicator (top-right area under lives) ──
+  if(comboDisplay && comboTierIndex >= 0){
+    const tier    = comboDisplay;
+    const elapsed = Date.now() - comboDisplayTimer;
+    const fade    = Math.max(0, 1 - (elapsed - 2500) / 1000); // fades after 2.5s
+    if(fade <= 0){
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur  = 0;
+      ctx.textAlign   = 'left';
+      return;
+    }
+
+    // Pulse ring
+    const pulse = 0.7 + 0.3 * Math.sin(Date.now() * 0.012);
+    const x     = WIDTH - 22;
+    const y     = 90;   // below lives
+
+    ctx.save();
+    ctx.globalAlpha = fade;
+    ctx.textAlign   = 'right';
+
+    // Glow aura
+    ctx.shadowColor = tier.glow;
+    ctx.shadowBlur  = 28 * pulse;
+    ctx.fillStyle   = tier.color;
+    ctx.font        = `bold ${Math.round(20 + 4*pulse)}px Arial`;
+    ctx.fillText(tier.label, x, y);
+
+    // Streak counter
+    ctx.shadowBlur  = 8;
+    ctx.fillStyle   = 'rgba(255,255,255,0.75)';
+    ctx.font        = 'bold 13px Arial';
+    ctx.fillText(`${comboKills} kills in a row`, x, y + 18);
+
+    ctx.shadowBlur  = 0;
+    ctx.restore();
+    ctx.textAlign   = 'left';
+  }
+
+  ctx.globalAlpha = 1;
+  ctx.shadowBlur  = 0;
+  ctx.textAlign   = 'left';
+}
+
+//=========================
 // BOSS ENEMY  (level-gated, scaling attack patterns)
 //=========================
 
 /*  Boss stats scale with level:
-    HP       = 5 + (level-1)*8          → 5, 13, 21, 29 …
-    Speed    = 2.5 + (level-1)*0.5      → 2.5, 3, 3.5, 4 …
-    Fire rate= every max(400, 1800-lvl*200) ms
-    Width/Height grow slightly each level
+    Levels 1-5: easy bosses — low HP, slow, infrequent fire
+    Level 6+:   gradual ramp in all stats
 */
 
-function bossMaxHP(lvl){ return 5+(lvl-1)*8; }
-function bossSpeed(lvl){ return 2.5+(lvl-1)*0.5; }
-function bossFireRate(lvl){ return Math.max(400, 1800-lvl*200); }
+function bossMaxHP(lvl){
+  if(lvl<=5) return 6 + (lvl-1)*3;           // 6,9,12,15,18
+  return 18 + (lvl-5)*9;                     // 18,27,36,45… after level 5
+}
+function bossSpeed(lvl){
+  if(lvl<=5) return 1.8 + (lvl-1)*0.3;       // 1.8,2.1,2.4,2.7,3.0
+  return 3.0 + (lvl-5)*0.5;                  // 3.0,3.5,4.0… after level 5
+}
+function bossFireRate(lvl){
+  if(lvl<=5) return 2000 - (lvl-1)*180;      // 2000,1820,1640,1460,1280 ms
+  return Math.max(280, 1280 - (lvl-5)*180);  // ramps to 280ms floor
+}
 
 // Boss colour palette per level (cycles after 6)
 const BOSS_PALETTES=[
@@ -5025,25 +5542,68 @@ const lvl=level;
 const pal=BOSS_PALETTES[(lvl-1)%BOSS_PALETTES.length];
 const w=160+lvl*8;
 const h=90+lvl*5;
+
+// Pre-generate enrage crack offsets so drawBoss doesn't call Math.random() every frame
+const crackSeeds = [[0,-1],[0.6,-0.5],[-0.6,-0.4],[0.4,0.6],[-0.5,0.5]];
+const crackOffsets = crackSeeds.map(([dx,dy])=>{
+  const segs=[];
+  for(let s=0;s<4;s++){
+    segs.push({ ox:(Math.random()-0.5)*12, oy:(Math.random()-0.5)*10 });
+  }
+  return {dx, dy, segs};
+});
+
 boss={
-x:WIDTH/2-w/2,
-y:30,
-width:w,
-height:h,
-speed:bossSpeed(lvl),
-dir:1,
-health:bossMaxHP(lvl),
-maxHealth:bossMaxHP(lvl),
-level:lvl,
-pal:pal,
-// attack timing
-lastShot:Date.now(),
-phase:0,           // sub-phase for multi-pattern attacks
-phaseTimer:Date.now(),
-// dive-bomb state (level 3+)
-diving:false,
-diveTarget:{x:0,y:0},
-diveReturnY:30,
+  x:WIDTH/2-w/2,
+  y:30,
+  width:w,
+  height:h,
+  speed:bossSpeed(lvl),
+  dir:1,
+  health:bossMaxHP(lvl),
+  maxHealth:bossMaxHP(lvl),
+  level:lvl,
+  pal:pal,
+  // attack timing
+  lastShot:Date.now(),
+  phase:0,
+  phaseTimer:Date.now(),
+  // movement
+  diving:false,
+  diveTarget:{x:0,y:0},
+  diveReturnY:30,
+  // ── new AI state ──────────────────────────────────────────
+  targetX:WIDTH/2,           // X position boss is steering toward
+  reposCooldown:0,           // timestamp: when we can pick a new targetX
+  strafeDir:1,               // current strafe direction
+  // ── special attack state ─────────────────────────────────
+  chargeTimer:0,             // >0 = charging up a special (ms remaining)
+  chargeType:'',             // which special is charging
+  chargeMax:0,               // total charge duration
+  lastSpecial:Date.now(),    // when last special was fired
+  specialCooldown:3500,      // ms between specials (shrinks with phase)
+  // ── laser state ──────────────────────────────────────────
+  laserActive:false,
+  laserAngle:0,              // sweep angle
+  laserTimer:0,
+  laserTarget:0,
+  laserWarning:false,
+  laserWarnX:0,
+  _laserHitCooldown:0,
+  // ── shockwave state ──────────────────────────────────────
+  shockwaves:[],             // [{x,y,r,maxR,life,maxLife}]
+  // ── HP phase tracking ────────────────────────────────────
+  hpPhase:0,                 // 0=full,1=<66%,2=<33%
+  // ── visual FX ────────────────────────────────────────────
+  chargeParticles:[],        // [{x,y,vx,vy,life,maxLife,color}]
+  hitFlash:0,                // frames of white flash after taking damage
+  // pre-computed crack geometry
+  crackOffsets,
+  // animation counters
+  _angle:0,
+  _pulse:0,
+  _tentOff:Math.random()*Math.PI*2,
+  _phaseFlashTimer:0,
 };
 }
 
@@ -5052,134 +5612,439 @@ if(gameOver) return;
 
 // ── Phase machine ──────────────────────────────────────────
 if(bossPhase==="warning"){
-if(Date.now()-bossPhaseTimer>=BOSS_WARNING_DUR){
-bossPhase="fighting";
-bossPhaseTimer=Date.now();
-spawnBoss();
-playBossWarningSound();
-}
-return;
+  if(Date.now()-bossPhaseTimer>=BOSS_WARNING_DUR){
+    bossPhase="fighting";
+    bossPhaseTimer=Date.now();
+    spawnBoss();
+    playBossWarningSound();
+  }
+  return;
 }
 
 if(bossPhase==="defeated"){
-if(Date.now()-bossPhaseTimer>=BOSS_DEFEATED_DUR){
-// Advance to next level and reset wave
-level++;
-waveKilled=0;
-levelUpMsg=Date.now();
-playLevelUpSound();
-achOnLevelComplete();
-// Boss Rush: skip wave phase, go straight to next boss
-if(handleBossRushNextBoss()){
-  boss=null;
-  bossBullets.length=0;
-} else {
-  bossPhase="wave";
-  boss=null;
-  bossBullets.length=0;
-  lastEnemy=Date.now();
-  // Open the upgrade shop between levels
-  openShop();
-}
-}
-return;
+  if(Date.now()-bossPhaseTimer>=BOSS_DEFEATED_DUR){
+    level++;
+    waveKilled=0;
+    levelUpMsg=Date.now();
+    playLevelUpSound();
+    achOnLevelComplete();
+    if(handleBossRushNextBoss()){
+      boss=null;
+      bossBullets.length=0;
+    } else {
+      bossPhase="wave";
+      boss=null;
+      bossBullets.length=0;
+      lastEnemy=Date.now();
+      openShop();
+    }
+  }
+  return;
 }
 
 if(bossPhase!=="fighting" || !boss) return;
 
-const lvl=boss.level;
-const now=Date.now();
+const lvl  = boss.level;
+const now  = Date.now();
+const hpFrac = boss.health / boss.maxHealth;
 
-// ── Movement ───────────────────────────────────────────────
+// ── HP phase transitions (0=full, 1=<66%, 2=<33%) ──────────
+const newHpPhase = hpFrac < 0.33 ? 2 : hpFrac < 0.66 ? 1 : 0;
+if(newHpPhase > boss.hpPhase){
+  boss.hpPhase = newHpPhase;
+  boss._phaseFlashTimer = 30;
+  // Phase transition: dramatic effect
+  triggerShake(14, 22);
+  triggerSlowMo();
+  spawnBossShockwave(boss.x+boss.width/2, boss.y+boss.height/2, 120, boss.pal.glow);
+  playBossPhaseSound(newHpPhase);
+  boss.lastSpecial    = now - boss.specialCooldown; // fire special immediately
+  boss.specialCooldown= Math.max(1500, boss.specialCooldown - 800);
+}
+
+// Enrage multiplier on speed
+const enrageMult = 1 + boss.hpPhase * 0.5; // ×1 / ×1.5 / ×2
+
+// ── Charging up a special ──────────────────────────────────
+if(boss.chargeTimer > 0){
+  boss.chargeTimer -= 16;
+  // Spawn charge particles pulling toward boss centre
+  const bcx = boss.x + boss.width/2;
+  const bcy = boss.y + boss.height/2;
+  if(Math.random() < 0.6){
+    const ang = Math.random()*Math.PI*2;
+    const dist = 60 + Math.random()*80;
+    boss.chargeParticles.push({
+      x: bcx + Math.cos(ang)*dist,
+      y: bcy + Math.sin(ang)*dist,
+      tx: bcx, ty: bcy,
+      life: 18, maxLife: 18,
+      color: boss.pal.eyes,
+      size: 2+Math.random()*3,
+    });
+  }
+  if(boss.chargeTimer <= 0){
+    // Fire the charged special
+    _fireBossSpecial(boss, boss.chargeType);
+    boss.chargeTimer = 0;
+    boss.chargeType  = '';
+  }
+  // Boss slows down while charging
+  return;
+}
+
+// ── Laser sweep update ─────────────────────────────────────
+if(boss.laserActive){
+  boss.laserTimer -= 16;
+  // Sweep angle toward player
+  const px = player.x + player.width/2;
+  const py = player.y + player.height/2;
+  const bcx2 = boss.x + boss.width/2;
+  const bcy2 = boss.y + boss.height;
+  const targetAng = Math.atan2(py-bcy2, px-bcx2);
+  const angleDiff = targetAng - boss.laserAngle;
+  const norm = Math.atan2(Math.sin(angleDiff), Math.cos(angleDiff));
+  boss.laserAngle += norm * 0.04 * (1 + boss.hpPhase*0.3);
+
+  // Laser hits player check — cooldown so it doesn't hit every frame
+  if(!shieldActive){
+    const dist2 = distToLaser(boss, boss.laserAngle);
+    if(dist2 < 22){
+      if(!boss._laserHitCooldown || boss._laserHitCooldown <= 0){
+        lives = Math.max(0, lives - 1);
+        boss._laserHitCooldown = 55; // ~0.9s between laser hits
+        triggerShake(8, 10);
+        achOnPlayerHit();
+        comboOnPlayerHit();
+        if(lives <= 0) gameOver = true;
+      }
+    }
+    if(boss._laserHitCooldown > 0) boss._laserHitCooldown--;
+  }
+
+  if(boss.laserTimer <= 0){
+    boss.laserActive  = false;
+    boss.laserWarning = false;
+  }
+  // Don't do normal movement/attack while lasering
+  return;
+}
+
+// ── Age charge particles ───────────────────────────────────
+for(let i=boss.chargeParticles.length-1; i>=0; i--){
+  const p = boss.chargeParticles[i];
+  p.x += (p.tx - p.x) * 0.12;
+  p.y += (p.ty - p.y) * 0.12;
+  p.life--;
+  if(p.life<=0) boss.chargeParticles.splice(i,1);
+}
+
+// ── Age shockwaves ─────────────────────────────────────────
+for(let i=boss.shockwaves.length-1; i>=0; i--){
+  const sw = boss.shockwaves[i];
+  sw.r  += sw.expandSpeed || 8;
+  sw.life--;
+  // Hurt player if shockwave rim passes through them
+  if(!shieldActive && sw.life > 0){
+    const px2=player.x+player.width/2, py2=player.y+player.height/2;
+    const d=Math.sqrt((px2-sw.x)**2+(py2-sw.y)**2);
+    if(!sw.hit && Math.abs(d-sw.r)<24){
+      sw.hit=true;
+      lives=Math.max(0,lives-1);
+      triggerShake(10,14);
+      achOnPlayerHit();
+      comboOnPlayerHit();
+      if(lives<=0) gameOver=true;
+    }
+  }
+  if(sw.life<=0) boss.shockwaves.splice(i,1);
+}
+
+// ── Hit flash decay ────────────────────────────────────────
+if(boss.hitFlash > 0) boss.hitFlash--;
+
+// ── Smart movement: track player X ────────────────────────
+{
+  const bcx3  = boss.x + boss.width/2;
+  const px3   = player.x + player.width/2;
+  const spd   = boss.speed * enrageMult;
+
+  // Pick a new target position periodically
+  if(now > boss.reposCooldown){
+    // Stay above player, offset randomly for variety
+    const offset = (Math.random()-0.5) * 180;
+    boss.targetX  = Math.max(boss.width/2, Math.min(WIDTH-boss.width/2, px3 + offset));
+    boss.reposCooldown = now + (800 - boss.hpPhase*200);
+  }
+
+  // Steer toward targetX
+  const diff = boss.targetX - bcx3;
+  if(Math.abs(diff) > 4){
+    boss.x += Math.sign(diff) * Math.min(spd, Math.abs(diff));
+  }
+
+  // Clamp
+  boss.x = Math.max(0, Math.min(WIDTH-boss.width, boss.x));
+
+  // Vertical: dive bomb toward player in phase 1+
+  if(lvl >= 2 && !boss.diving && now - boss.phaseTimer > (5000 - boss.hpPhase*1200)){
+    boss.diving = true;
+    boss.diveTarget = {
+      x: player.x + player.width/2 - boss.width/2,
+      y: Math.min(HEIGHT*0.6, player.y - 60),
+    };
+    boss.phaseTimer = now;
+    playBossChargeSound(0);
+  }
+}
+
+// ── Dive movement ──────────────────────────────────────────
 if(boss.diving){
-// Dive toward target
-const dx=boss.diveTarget.x-boss.x;
-const dy=boss.diveTarget.y-boss.y;
-const dist=Math.sqrt(dx*dx+dy*dy);
-if(dist<8){
-// Start returning
-boss.diving=false;
+  const dx = boss.diveTarget.x - boss.x;
+  const dy = boss.diveTarget.y - boss.y;
+  const dist = Math.sqrt(dx*dx+dy*dy);
+  if(dist < 10){
+    boss.diving = false;
+    // Shockwave on landing
+    spawnBossShockwave(boss.x+boss.width/2, boss.y+boss.height*0.8,
+      80, boss.pal.dome);
+    triggerShake(8, 12);
+  } else {
+    const spd = boss.speed * enrageMult * 3.5;
+    boss.x += dx/dist*spd;
+    boss.y += dy/dist*spd;
+  }
 } else {
-const spd=boss.speed*2.5;
-boss.x+=dx/dist*spd;
-boss.y+=dy/dist*spd;
-}
-} else {
-// Return to patrol row
-if(boss.y>boss.diveReturnY+2){
-boss.y-=boss.speed*1.5;
-}
-// Horizontal patrol
-boss.x+=boss.speed*boss.dir;
-if(boss.x<=0){ boss.x=0; boss.dir=1; }
-if(boss.x+boss.width>=WIDTH){ boss.x=WIDTH-boss.width; boss.dir=-1; }
+  // Return to patrol row gently
+  if(boss.y > boss.diveReturnY + 2) boss.y -= boss.speed * enrageMult * 1.2;
 }
 
-// ── Attack patterns ────────────────────────────────────────
-const fireRate=bossFireRate(lvl);
-if(now-boss.lastShot>fireRate){
-boss.lastShot=now;
-bossAttack(boss, lvl);
+// ── Regular attack ─────────────────────────────────────────
+const fireRate = Math.max(180, bossFireRate(lvl) / enrageMult);
+if(now - boss.lastShot > fireRate){
+  boss.lastShot = now;
+  bossAttack(boss, lvl, boss.hpPhase);
 }
 
-// Level 3+: dive bomb every 8 seconds
-if(lvl>=3 && !boss.diving && now-boss.phaseTimer>8000){
-boss.diving=true;
-boss.diveTarget={x:player.x+player.width/2-boss.width/2, y:HEIGHT*0.55};
-boss.phaseTimer=now;
+// ── Special attack trigger ─────────────────────────────────
+const specialInterval = Math.max(1800, boss.specialCooldown / enrageMult);
+if(now - boss.lastSpecial > specialInterval && boss.chargeTimer === 0 && !boss.laserActive){
+  boss.lastSpecial = now;
+  _startBossSpecial(boss, lvl);
 }
 }
 
-function bossAttack(b, lvl){
-const cx=b.x+b.width/2;
-const by=b.y+b.height;
-
-// Level 1 – single aimed shot
-if(lvl>=1){
-fireAimedShot(cx, by, 1);
-}
-// Level 2 – adds two diagonal shots
-if(lvl>=2){
-fireAimedShot(cx, by, 1, -0.3);
-fireAimedShot(cx, by, 1, 0.3);
-}
-// Level 3 – adds 5-way spread
-if(lvl>=3){
-for(let i=-2;i<=2;i++){
-bossBullets.push({x:cx-5, y:by, vx:i*1.8, vy:4+lvl*0.3, r:7, dmg:1, color:b.pal.eyes});
-}
-}
-// Level 4 – homing bullet in addition
-if(lvl>=4){
-bossBullets.push({
-x:cx-6, y:by, vx:0, vy:3, r:8, dmg:1,
-color:"#ff4400", homing:true, homingStrength:0.08+lvl*0.01
-});
-}
-// Level 5+ – extra burst ring
-if(lvl>=5){
-const count=8;
-for(let i=0;i<count;i++){
-const a=(Math.PI*2/count)*i+(Math.PI/2);
-bossBullets.push({x:cx-5, y:b.y+b.height*0.5, vx:Math.cos(a)*3.5, vy:Math.sin(a)*3.5, r:6, dmg:1, color:"#ff00ff"});
-}
-}
+// ── Laser hit-distance helper ──────────────────────────────
+function distToLaser(b, ang){
+  const bcx = b.x+b.width/2;
+  const bcy = b.y+b.height;
+  const px  = player.x+player.width/2;
+  const py  = player.y+player.height/2;
+  const lx  = Math.cos(ang);
+  const ly  = Math.sin(ang);
+  const dx  = px-bcx;
+  const dy  = py-bcy;
+  const t   = dx*lx + dy*ly;
+  if(t < 0) return 9999;
+  return Math.abs(dx*ly - dy*lx);
 }
 
-function fireAimedShot(ox, oy, dmg, offsetVx=0){
-// Aim toward player centre
-const tx=player.x+player.width/2;
-const ty=player.y+player.height/2;
-const dx=tx-ox;
-const dy=ty-oy;
-const dist=Math.sqrt(dx*dx+dy*dy)||1;
-const spd=5+level*0.4;
-bossBullets.push({
-x:ox-5, y:oy,
-vx:(dx/dist)*spd + offsetVx,
-vy:(dy/dist)*spd,
-r:7, dmg:dmg, color:"#ff2222", homing:false
-});
+// ── Spawn a shockwave ring ──────────────────────────────────
+function spawnBossShockwave(x, y, maxR, color, expandSpeed=8){
+  if(!boss) return;
+  boss.shockwaves.push({ x, y, r:10, maxR, expandSpeed,
+    life:Math.ceil(maxR/expandSpeed)+4,
+    maxLife:Math.ceil(maxR/expandSpeed)+4,
+    color, hit:false });
+}
+
+// ── Begin charging a special ────────────────────────────────
+function _startBossSpecial(b, lvl){
+  // Pick special based on level and current hp phase
+  const options = ['spiral','homing_volley','shockwave'];
+  if(lvl >= 3) options.push('laser');
+  if(lvl >= 5) options.push('burst_ring');
+  if(lvl >= 7) options.push('death_blossom');
+
+  const type = options[Math.floor(Math.random()*options.length)];
+  const chargeTime = type==='laser' ? 1200 : type==='death_blossom' ? 1400 : 800;
+
+  b.chargeTimer = chargeTime;
+  b.chargeMax   = chargeTime;
+  b.chargeType  = type;
+  playBossChargeSound(chargeTime);
+
+  // Laser shows a warning line immediately
+  if(type==='laser'){
+    b.laserWarning = true;
+    b.laserWarnX   = player.x + player.width/2;
+  }
+}
+
+// ── Fire the charged special ────────────────────────────────
+function _fireBossSpecial(b, type){
+  const cx  = b.x + b.width/2;
+  const cy  = b.y + b.height;
+  const lvl = b.level;
+
+  if(bossBullets.length > 100) return;
+
+  switch(type){
+
+    case 'spiral': {
+      // 12-bullet spiral
+      const count = 12 + b.hpPhase*4;
+      for(let i=0;i<count;i++){
+        const a = (Math.PI*2/count)*i + b._angle;
+        const spd = 3.5 + b.hpPhase*0.8;
+        bossBullets.push({ x:cx, y:cy, vx:Math.cos(a)*spd, vy:Math.sin(a)*spd,
+          r:7, dmg:1, color:b.pal.dome, trail:[] });
+      }
+      playBossAttackSound('spiral');
+      triggerShake(6, 8);
+      break;
+    }
+
+    case 'homing_volley': {
+      // 3–5 fast homing missiles
+      const count2 = 3 + b.hpPhase*1;
+      for(let i=0;i<count2;i++){
+        setTimeout(()=>{
+          if(!boss || bossPhase!=='fighting') return;
+          const bcx2=boss.x+boss.width/2, bcy2=boss.y+boss.height;
+          bossBullets.push({ x:bcx2+(i-1)*24, y:bcy2, vx:0, vy:2,
+            r:9, dmg:1, color:'#ff4400',
+            homing:true, homingStrength:0.14+b.hpPhase*0.04,
+            trail:[], pulse:0 });
+        }, i*160);
+      }
+      playBossAttackSound('homing');
+      break;
+    }
+
+    case 'shockwave': {
+      spawnBossShockwave(cx, cy-b.height/2, 260, b.pal.eyes, 9);
+      spawnBossShockwave(cx, cy-b.height/2, 180, b.pal.dome, 7);
+      playBossAttackSound('shockwave');
+      triggerShake(10, 16);
+      break;
+    }
+
+    case 'laser': {
+      b.laserActive  = true;
+      b.laserWarning = false;
+      b.laserTimer   = 2200 + b.hpPhase*400;
+      b.laserAngle   = Math.atan2(
+        player.y+player.height/2 - cy,
+        player.x+player.width/2 - cx
+      );
+      playBossAttackSound('laser');
+      break;
+    }
+
+    case 'burst_ring': {
+      // Fast tight ring aimed at player
+      const count3 = 16 + b.hpPhase*4;
+      const baseAng = Math.atan2(player.y+player.height/2-cy, player.x+player.width/2-cx);
+      for(let i=0;i<count3;i++){
+        const a = (Math.PI*2/count3)*i;
+        const spd2 = 5 + b.hpPhase;
+        bossBullets.push({ x:cx, y:cy, vx:Math.cos(a)*spd2, vy:Math.sin(a)*spd2,
+          r:6, dmg:1, color:b.pal.eyes, trail:[] });
+      }
+      // Extra aimed cluster at player
+      for(let i=-2;i<=2;i++){
+        const a2 = baseAng + i*0.15;
+        bossBullets.push({ x:cx, y:cy, vx:Math.cos(a2)*7, vy:Math.sin(a2)*7,
+          r:8, dmg:1, color:'#ffffff', trail:[] });
+      }
+      playBossAttackSound('burst');
+      triggerShake(8, 12);
+      break;
+    }
+
+    case 'death_blossom': {
+      // Two overlapping spirals + homing
+      const c1=18+b.hpPhase*4;
+      for(let i=0;i<c1;i++){
+        const a = (Math.PI*2/c1)*i;
+        bossBullets.push({ x:cx, y:cy,
+          vx:Math.cos(a)*4, vy:Math.sin(a)*4,
+          r:7, dmg:1, color:b.pal.dome, trail:[] });
+      }
+      for(let i=0;i<c1;i++){
+        const a = (Math.PI*2/c1)*i + Math.PI/c1;
+        bossBullets.push({ x:cx, y:cy,
+          vx:Math.cos(a)*6, vy:Math.sin(a)*6,
+          r:6, dmg:1, color:b.pal.eyes, trail:[] });
+      }
+      bossBullets.push({ x:cx, y:cy, vx:0, vy:2,
+        r:10, dmg:1, color:'#ff4400',
+        homing:true, homingStrength:0.18, trail:[], pulse:0 });
+      playBossAttackSound('blossom');
+      spawnBossShockwave(cx, cy, 150, b.pal.glow, 11);
+      triggerShake(14, 20);
+      break;
+    }
+  }
+}
+
+function bossAttack(b, lvl, hpPhase){
+  const cx = b.x+b.width/2;
+  const by = b.y+b.height;
+
+  if(bossBullets.length > 100) return;
+
+  // Always: aimed shot
+  _fireAimedBullet(cx, by, b.pal.eyes, 1);
+
+  // Phase 0 extras by level
+  if(lvl>=2) _fireAimedBullet(cx, by, b.pal.eyes, 1, -0.22);
+  if(lvl>=2) _fireAimedBullet(cx, by, b.pal.eyes, 1,  0.22);
+
+  if(lvl>=4){
+    _fireAimedBullet(cx, by, b.pal.dome, 1, -0.44);
+    _fireAimedBullet(cx, by, b.pal.dome, 1,  0.44);
+  }
+
+  // HP phase extras — more bullets, wider spreads
+  if(hpPhase >= 1){
+    _fireAimedBullet(cx, by, '#ffffff', 1, -0.62);
+    _fireAimedBullet(cx, by, '#ffffff', 1,  0.62);
+    // Extra fast straight-down shot
+    bossBullets.push({ x:cx, y:by, vx:0, vy:7+lvl*0.3,
+      r:8, dmg:1, color:b.pal.eyes, trail:[] });
+  }
+
+  if(hpPhase >= 2){
+    // Diagonal pairs
+    for(let i=-3;i<=3;i++){
+      bossBullets.push({ x:cx, y:by, vx:i*2.2, vy:6+lvl*0.25,
+        r:7, dmg:1, color:b.pal.dome, trail:[] });
+    }
+  }
+
+  playBossAttackSound('basic');
+}
+
+function _fireAimedBullet(ox, oy, color, dmg, offsetVx=0){
+  const tx = player.x+player.width/2;
+  const ty = player.y+player.height/2;
+  const dx = tx-ox;
+  const dy = ty-oy;
+  const dist = Math.sqrt(dx*dx+dy*dy)||1;
+  const spd = 6 + level*0.4;
+  bossBullets.push({
+    x:ox, y:oy,
+    vx:(dx/dist)*spd + offsetVx,
+    vy:(dy/dist)*spd,
+    r:7, dmg, color, homing:false, trail:[],
+  });
+}
+
+// Keep old name as alias for any references
+function fireAimedShot(ox,oy,dmg,offsetVx=0){
+  _fireAimedBullet(ox,oy,'#ff2222',dmg,offsetVx);
 }
 
 function updateBossBullets(){
@@ -5187,52 +6052,99 @@ if(gameOver) return;
 const px=player.x+player.width/2;
 const py=player.y+player.height/2;
 for(let i=bossBullets.length-1;i>=0;i--){
-const b=bossBullets[i];
-// Homing steering
-if(b.homing){
-const dx=px-b.x;
-const dy=py-b.y;
-const dist=Math.sqrt(dx*dx+dy*dy)||1;
-b.vx+=(dx/dist)*(b.homingStrength||0.1);
-b.vy+=(dy/dist)*(b.homingStrength||0.1);
-// Cap speed
-const spd=Math.sqrt(b.vx*b.vx+b.vy*b.vy);
-const maxSpd=6+level*0.3;
-if(spd>maxSpd){ b.vx=b.vx/spd*maxSpd; b.vy=b.vy/spd*maxSpd; }
-}
-b.x+=b.vx;
-b.y+=b.vy;
-// Remove off-screen
-if(b.y>HEIGHT+20 || b.y<-20 || b.x<-20 || b.x>WIDTH+20){
-bossBullets.splice(i,1); continue;
-}
-// Hit player
-if(!shieldActive){
-const dx=px-b.x;
-const dy=py-b.y;
-if(Math.sqrt(dx*dx+dy*dy)<b.r+20){
-bossBullets.splice(i,1);
-lives-=b.dmg;
-createExplosion(b.x,b.y);
-triggerShake(10, 14);
-achOnPlayerHit();
-if(lives<=0){ lives=0; gameOver=true; }
-}
-}
+  const b=bossBullets[i];
+
+  // Trail recording (cap length)
+  if(b.trail !== undefined){
+    b.trail.push({x:b.x, y:b.y});
+    if(b.trail.length > 8) b.trail.shift();
+  }
+
+  // Pulse for homing missiles
+  if(b.pulse !== undefined) b.pulse = (b.pulse||0)+0.18;
+
+  // Homing steering
+  if(b.homing){
+    const dx=px-b.x;
+    const dy=py-b.y;
+    const dist=Math.sqrt(dx*dx+dy*dy)||1;
+    b.vx+=(dx/dist)*(b.homingStrength||0.1);
+    b.vy+=(dy/dist)*(b.homingStrength||0.1);
+    const spd=Math.sqrt(b.vx*b.vx+b.vy*b.vy);
+    const maxSpd=7+level*0.3;
+    if(spd>maxSpd){ b.vx=b.vx/spd*maxSpd; b.vy=b.vy/spd*maxSpd; }
+  }
+  b.x+=b.vx;
+  b.y+=b.vy;
+
+  if(b.y>HEIGHT+20 || b.y<-30 || b.x<-30 || b.x>WIDTH+30){
+    bossBullets.splice(i,1); continue;
+  }
+  if(!shieldActive){
+    const dx=px-b.x;
+    const dy=py-b.y;
+    if(Math.sqrt(dx*dx+dy*dy)<b.r+18){
+      bossBullets.splice(i,1);
+      lives-=b.dmg;
+      createExplosion(b.x,b.y);
+      triggerShake(10,14);
+      achOnPlayerHit();
+      comboOnPlayerHit();
+      if(lives<=0){ lives=0; gameOver=true; }
+    }
+  }
 }
 }
 
 function drawBossBullets(){
-for(const b of bossBullets){
-const grd=ctx.createRadialGradient(b.x,b.y,1,b.x,b.y,b.r);
-grd.addColorStop(0,"#ffffff");
-grd.addColorStop(0.4,b.color);
-grd.addColorStop(1,"rgba(0,0,0,0)");
-ctx.fillStyle=grd;
-ctx.beginPath();
-ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
-ctx.fill();
-}
+  if(!bossBullets.length) return;
+  for(const b of bossBullets){
+    // Trail
+    if(b.trail && b.trail.length > 1){
+      ctx.save();
+      for(let t=0;t<b.trail.length;t++){
+        const alpha = (t/b.trail.length)*0.45;
+        const r2    = b.r * (t/b.trail.length) * 0.7;
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle   = b.color;
+        ctx.beginPath();
+        ctx.arc(b.trail[t].x, b.trail[t].y, r2, 0, Math.PI*2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    // Homing missile: pulsing outer ring
+    if(b.homing){
+      const pulseR = b.r + 5 + Math.sin(b.pulse||0)*4;
+      ctx.save();
+      ctx.globalAlpha = 0.45;
+      ctx.shadowColor = b.color;
+      ctx.shadowBlur  = 14;
+      ctx.strokeStyle = b.color;
+      ctx.lineWidth   = 2;
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, pulseR, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Main bullet body
+    ctx.shadowColor = b.color;
+    ctx.shadowBlur  = b.homing ? 18 : 10;
+    ctx.fillStyle   = b.color;
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
+    ctx.fill();
+    // White hot core
+    ctx.shadowBlur = 0;
+    ctx.fillStyle  = 'rgba(255,255,255,0.85)';
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.r*0.38, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.shadowBlur  = 0;
+  ctx.globalAlpha = 1;
 }
 
 function drawBoss(){
@@ -5248,10 +6160,7 @@ const lvl  = boss.level;
 const t    = Date.now()*0.001;
 const hpFrac = Math.max(0, boss.health/boss.maxHealth);
 
-// ── animated counters stored on boss ──────────────────────
-if(!boss._angle)   boss._angle   = 0;
-if(!boss._pulse)   boss._pulse   = 0;
-if(!boss._tentOff) boss._tentOff = Math.random()*Math.PI*2;
+// ── animated counters (initialised in spawnBoss) ──────────────
 boss._angle  += 0.028 + lvl*0.004;
 boss._pulse  += 0.06;
 
@@ -5278,6 +6187,9 @@ ctx.fill();
 // 1. ROTATING ENERGY RINGS
 // ════════════════════════════════════════
 const ringCount = 2 + Math.min(lvl-1, 3);
+// Set shadow once for all rings (not per-ring) to avoid GPU flush per iteration
+ctx.shadowColor = pal.glow;
+ctx.shadowBlur  = 12 + pulse*3;
 for(let ri=0; ri<ringCount; ri++){
   const ringR   = hw*(0.95+ri*0.14) + pulse*3;
   const ringAng = ang*(ri%2===0?1:-1) + ri*(Math.PI/ringCount);
@@ -5285,8 +6197,6 @@ for(let ri=0; ri<ringCount; ri++){
   ctx.save();
   ctx.translate(cx, cy);
   ctx.rotate(ringAng);
-  ctx.shadowColor = pal.glow;
-  ctx.shadowBlur  = 14+pulse*4;
   ctx.strokeStyle = ri===0 ? pal.dome : pal.eyes;
   ctx.lineWidth   = ri===0 ? 2.5 : 1.5;
   ctx.globalAlpha = 0.55+0.25*Math.sin(boss._pulse+ri);
@@ -5297,6 +6207,7 @@ for(let ri=0; ri<ringCount; ri++){
   ctx.setLineDash([]);
   ctx.restore();
 }
+ctx.shadowBlur  = 0;
 ctx.globalAlpha = 1;
 
 // ════════════════════════════════════════
@@ -5314,7 +6225,7 @@ const wingFlap = boss.diving ? Math.sin(t*8)*0.18 : Math.sin(t*2)*0.06;
 
   ctx.save();
   ctx.shadowColor = pal.glow;
-  ctx.shadowBlur  = 10;
+  ctx.shadowBlur  = 8;
 
   // Wing panel fill
   const wGrd = ctx.createLinearGradient(wBaseX, wBaseY, tipX, tipY);
@@ -5334,6 +6245,7 @@ const wingFlap = boss.diving ? Math.sin(t*8)*0.18 : Math.sin(t*2)*0.06;
   ctx.globalAlpha = 0.7;
   ctx.strokeStyle = pal.dome;
   ctx.lineWidth   = 1.5;
+  ctx.shadowBlur  = 0;
   ctx.beginPath();
   ctx.moveTo(wBaseX, wBaseY);
   ctx.quadraticCurveTo(midX, midY, tipX, tipY);
@@ -5342,7 +6254,7 @@ const wingFlap = boss.diving ? Math.sin(t*8)*0.18 : Math.sin(t*2)*0.06;
   // Wingtip thruster (small glowing orb)
   ctx.globalAlpha = 0.9;
   ctx.shadowColor = enrage ? '#ff2200' : pal.eyes;
-  ctx.shadowBlur  = 18;
+  ctx.shadowBlur  = 14;
   ctx.fillStyle   = enrage ? '#ff4400' : pal.dome;
   ctx.beginPath();
   ctx.arc(tipX, tipY, 4+pulse*1.5, 0, Math.PI*2);
@@ -5356,7 +6268,7 @@ ctx.globalAlpha = 1;
 // 3. MAIN HULL — segmented plating
 // ════════════════════════════════════════
 ctx.shadowColor = pal.glow;
-ctx.shadowBlur  = enrage ? 40+pulse*12 : 22+pulse*6;
+ctx.shadowBlur  = enrage ? 28+pulse*8 : 16+pulse*4;
 
 // Hull base ellipse
 const hullGrd = ctx.createRadialGradient(cx-hw*0.2, cy-hh*0.2, 4, cx, cy, hw);
@@ -5369,14 +6281,17 @@ ctx.beginPath();
 ctx.ellipse(cx, cy, hw, hh*0.58, 0, 0, Math.PI*2);
 ctx.fill();
 
-// Hull plating lines
+// Hull plating lines — disable shadow first (inner strokes don't need it)
+ctx.shadowBlur  = 0;
 ctx.strokeStyle = `rgba(255,255,255,0.12)`;
 ctx.lineWidth   = 1;
+// Batch all plating ellipses into one path
+ctx.beginPath();
 for(let pl=1; pl<4; pl++){
-  ctx.beginPath();
   ctx.ellipse(cx, cy, hw*(pl/4), hh*0.58*(pl/4), 0, 0, Math.PI*2);
-  ctx.stroke();
 }
+ctx.stroke();
+
 // Vertical spine
 ctx.strokeStyle = `rgba(255,255,255,0.1)`;
 ctx.beginPath();
@@ -5387,7 +6302,8 @@ ctx.stroke();
 // Hull rim glow
 ctx.strokeStyle = pal.dome;
 ctx.lineWidth   = enrage ? 3 : 2;
-ctx.shadowBlur  = 18;
+ctx.shadowColor = pal.glow;
+ctx.shadowBlur  = 14;
 ctx.beginPath();
 ctx.ellipse(cx, cy, hw, hh*0.58, 0, 0, Math.PI*2);
 ctx.stroke();
@@ -5425,23 +6341,23 @@ const eyePositions = [
   {ox: hw*0.32, oy:-hh*0.08, r:6+lvl*0.5},
   {ox: 0,       oy: hh*0.14, r:4+lvl*0.3},
 ];
+ctx.shadowColor = pal.eyes;
+ctx.shadowBlur  = 14 + pulse*5;
 eyePositions.forEach((ep,ei)=>{
   const ex = cx + ep.ox;
   const ey = cy + ep.oy;
   const er = ep.r;
 
   // Outer iris
-  ctx.shadowColor = pal.eyes;
-  ctx.shadowBlur  = 16+pulse*6;
-  ctx.fillStyle   = pal.eyes;
+  ctx.fillStyle = pal.eyes;
   ctx.beginPath(); ctx.arc(ex, ey, er, 0, Math.PI*2); ctx.fill();
 
   // Dark pupil
-  ctx.shadowBlur  = 0;
-  ctx.fillStyle   = '#000000';
+  ctx.shadowBlur = 0;
+  ctx.fillStyle  = '#000000';
   ctx.beginPath(); ctx.arc(ex, ey, er*0.5, 0, Math.PI*2); ctx.fill();
 
-  // Pupil glint — tracks pseudo-randomly with boss angle
+  // Pupil glint
   const gx = ex + Math.cos(ang*(ei%2===0?1:-1))*er*0.28;
   const gy = ey + Math.sin(ang)*er*0.28;
   ctx.fillStyle = '#ffffff';
@@ -5452,10 +6368,11 @@ eyePositions.forEach((ep,ei)=>{
     ctx.strokeStyle = '#ff2200';
     ctx.lineWidth   = 1.5;
     ctx.shadowColor = '#ff2200';
-    ctx.shadowBlur  = 12;
+    ctx.shadowBlur  = 10;
     ctx.beginPath(); ctx.arc(ex, ey, er+2+pulse, 0, Math.PI*2); ctx.stroke();
-    ctx.shadowBlur  = 0;
   }
+  ctx.shadowBlur  = 0;
+  ctx.shadowColor = pal.eyes;
 });
 
 // ════════════════════════════════════════
@@ -5465,42 +6382,48 @@ const cannonPositions = lvl>=3
   ? [-hw*0.58, -hw*0.2, hw*0.2, hw*0.58]
   : [-hw*0.38, hw*0.38];
 
+ctx.shadowColor = pal.glow;
+ctx.shadowBlur  = 6;
+ctx.fillStyle   = pal.arm;
+// Draw all barrel casings in one batch
 cannonPositions.forEach(ox=>{
   const bx = cx + ox;
   const by = cy + hh*0.52;
   const barrelLen = 18+lvl*2;
-
-  // Barrel casing
-  ctx.shadowColor = pal.glow;
-  ctx.shadowBlur  = 8;
-  ctx.fillStyle   = pal.arm;
   ctx.fillRect(bx-5, by, 10, barrelLen);
+});
+ctx.shadowBlur = 0;
 
-  // Barrel tip glow
+// Barrel tips and rings
+cannonPositions.forEach(ox=>{
+  const bx = cx + ox;
+  const by = cy + hh*0.52;
+  const barrelLen = 18+lvl*2;
   const charge = 0.5+0.5*Math.sin(boss._pulse + ox*0.1);
   ctx.shadowColor = pal.eyes;
-  ctx.shadowBlur  = 14*charge;
+  ctx.shadowBlur  = 10*charge;
   ctx.fillStyle   = pal.dome;
   ctx.beginPath();
   ctx.arc(bx, by+barrelLen, 5+charge*3, 0, Math.PI*2);
   ctx.fill();
 
-  // Barrel rings
+  // Barrel rings — batch all 3 into one path
   ctx.shadowBlur  = 0;
   ctx.strokeStyle = pal.dome;
   ctx.lineWidth   = 1;
+  ctx.beginPath();
   [0.25,0.55,0.82].forEach(f=>{
-    ctx.beginPath();
     ctx.rect(bx-5, by+barrelLen*f-1, 10, 2);
-    ctx.stroke();
   });
+  ctx.stroke();
 });
-
 ctx.shadowBlur = 0;
 
 // ════════════════════════════════════════
 // 7. UNDERBELLY THRUSTER CLUSTER
 // ════════════════════════════════════════
+ctx.shadowColor = enrage ? '#ff4400' : pal.glow;
+ctx.shadowBlur  = 10;
 [-hw*0.55, 0, hw*0.55].forEach((ox,ti)=>{
   const tx2 = cx + ox;
   const ty2 = cy - hh*0.45;
@@ -5512,9 +6435,7 @@ ctx.shadowBlur = 0;
   fGrd.addColorStop(0, enrage ? 'rgba(255,80,0,0.95)' : `rgba(180,100,255,0.9)`);
   fGrd.addColorStop(0.5, enrage ? 'rgba(255,0,0,0.5)' : `rgba(80,0,255,0.5)`);
   fGrd.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle   = fGrd;
-  ctx.shadowColor = enrage ? '#ff4400' : pal.glow;
-  ctx.shadowBlur  = 14;
+  ctx.fillStyle = fGrd;
   ctx.beginPath();
   ctx.ellipse(tx2, ty2, 6*flicker, fLen, 0, 0, Math.PI*2);
   ctx.fill();
@@ -5531,19 +6452,20 @@ if(enrage){
   ctx.shadowBlur  = 30;
   ctx.strokeStyle = '#ff4400';
   ctx.lineWidth   = 2;
-  // Jagged cracks radiating from centre
-  const crackSeeds = [[0,-1],[0.6,-0.5],[-0.6,-0.4],[0.4,0.6],[-0.5,0.5]];
-  crackSeeds.forEach(([dx,dy])=>{
+  // Jagged cracks — use pre-baked offsets from spawnBoss (no Math.random() per frame)
+  if(boss.crackOffsets){
     ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    let px2=cx, py2=cy;
-    for(let seg=0;seg<4;seg++){
-      px2 += dx*(hw*0.22)+(Math.random()-0.5)*12;
-      py2 += dy*(hh*0.22)+(Math.random()-0.5)*10;
-      ctx.lineTo(px2,py2);
-    }
+    boss.crackOffsets.forEach(({dx, dy, segs})=>{
+      let px2=cx, py2=cy;
+      ctx.moveTo(px2, py2);
+      for(let seg=0; seg<segs.length; seg++){
+        px2 += dx*(hw*0.22) + segs[seg].ox;
+        py2 += dy*(hh*0.22) + segs[seg].oy;
+        ctx.lineTo(px2, py2);
+      }
+    });
     ctx.stroke();
-  });
+  }
   ctx.restore();
 }
 
@@ -5574,17 +6496,18 @@ ctx.beginPath();
 ctx.roundRect(barX, barY2, barW*hpFrac, barH2, 3);
 ctx.fill();
 
-// Segment ticks
+// Segment ticks — batched into a single path (avoids N separate stroke() calls)
 ctx.shadowBlur  = 0;
 ctx.strokeStyle = 'rgba(0,0,0,0.6)';
 ctx.lineWidth   = 1;
-for(let s=1;s<segs;s++){
-  const tx3 = barX + barW*(s/segs);
-  ctx.beginPath();
+const maxSegs = Math.min(segs, 40); // cap visual ticks at 40 regardless of HP pool
+ctx.beginPath();
+for(let s=1; s<maxSegs; s++){
+  const tx3 = barX + barW*(s/maxSegs);
   ctx.moveTo(tx3, barY2);
   ctx.lineTo(tx3, barY2+barH2);
-  ctx.stroke();
 }
+ctx.stroke();
 
 // Border
 ctx.strokeStyle = pal.glow;
@@ -5609,6 +6532,179 @@ ctx.fillText(
 ctx.textAlign  = 'left';
 ctx.shadowBlur = 0;
 
+// ════════════════════════════════════════
+// 10. CHARGE PARTICLES (pulling inward)
+// ════════════════════════════════════════
+if(boss.chargeParticles && boss.chargeParticles.length){
+  const chargeProgress = boss.chargeMax > 0
+    ? 1 - boss.chargeTimer / boss.chargeMax : 0;
+  for(const p of boss.chargeParticles){
+    const a = p.life / p.maxLife;
+    ctx.save();
+    ctx.globalAlpha = a * 0.9;
+    ctx.shadowColor = p.color;
+    ctx.shadowBlur  = 12;
+    ctx.fillStyle   = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size*(1-chargeProgress*0.5+0.1), 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+  // Central charge glow that grows as charge fills
+  const chargeR = 18 + chargeProgress * 55;
+  ctx.save();
+  ctx.globalAlpha = 0.15 + chargeProgress * 0.55;
+  ctx.shadowColor = pal.eyes;
+  ctx.shadowBlur  = 30 + chargeProgress * 40;
+  ctx.fillStyle   = pal.eyes;
+  ctx.beginPath();
+  ctx.arc(cx, cy, chargeR, 0, Math.PI*2);
+  ctx.fill();
+  // Outer ring
+  ctx.globalAlpha = 0.7 + chargeProgress * 0.3;
+  ctx.shadowBlur  = 20;
+  ctx.strokeStyle = pal.dome;
+  ctx.lineWidth   = 2.5;
+  ctx.beginPath();
+  ctx.arc(cx, cy, chargeR + 8, 0, Math.PI*2);
+  ctx.stroke();
+  ctx.restore();
+
+  // "CHARGING" text
+  if(chargeProgress > 0.1){
+    ctx.save();
+    ctx.globalAlpha   = 0.55 + chargeProgress*0.45;
+    ctx.shadowColor   = pal.eyes;
+    ctx.shadowBlur    = 16;
+    ctx.fillStyle     = '#ffffff';
+    ctx.font          = `bold ${Math.round(12+chargeProgress*8)}px Arial`;
+    ctx.textAlign     = 'center';
+    const chargeLabel = boss.chargeType==='laser' ? '⚡ LASER CHARGING'
+      : boss.chargeType==='death_blossom' ? '☠ DEATH BLOSSOM'
+      : boss.chargeType==='shockwave'     ? '💥 SHOCKWAVE'
+      : '⚠ CHARGING';
+    ctx.fillText(chargeLabel, cx, barY2 - 26);
+    ctx.restore();
+  }
+}
+
+// ════════════════════════════════════════
+// 11. LASER WARNING LINE
+// ════════════════════════════════════════
+if(boss.laserWarning && !boss.laserActive){
+  const warnPulse = 0.5 + 0.5*Math.sin(Date.now()*0.025);
+  ctx.save();
+  ctx.globalAlpha   = 0.35 + warnPulse*0.45;
+  ctx.shadowColor   = '#ff0000';
+  ctx.shadowBlur    = 18;
+  ctx.strokeStyle   = '#ff4400';
+  ctx.lineWidth     = 2;
+  ctx.setLineDash([12, 8]);
+  const warnX = boss.laserWarnX;
+  ctx.beginPath();
+  ctx.moveTo(warnX, boss.y + boss.height);
+  ctx.lineTo(warnX, HEIGHT);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  // Warning diamond at top
+  ctx.shadowBlur  = 24;
+  ctx.fillStyle   = '#ff2200';
+  ctx.beginPath();
+  ctx.moveTo(warnX, boss.y+boss.height);
+  ctx.lineTo(warnX+8, boss.y+boss.height+14);
+  ctx.lineTo(warnX, boss.y+boss.height+28);
+  ctx.lineTo(warnX-8, boss.y+boss.height+14);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+// ════════════════════════════════════════
+// 12. ACTIVE LASER BEAM
+// ════════════════════════════════════════
+if(boss.laserActive){
+  const bcxL = cx;
+  const bcyL = boss.y + boss.height;
+  const laserLen = 1800;
+  const ex = bcxL + Math.cos(boss.laserAngle)*laserLen;
+  const ey = bcyL + Math.sin(boss.laserAngle)*laserLen;
+
+  ctx.save();
+  // Outer glow beam
+  ctx.shadowColor = '#ff0000';
+  ctx.shadowBlur  = 28;
+  ctx.strokeStyle = `rgba(255,60,0,0.35)`;
+  ctx.lineWidth   = 22;
+  ctx.beginPath();
+  ctx.moveTo(bcxL, bcyL);
+  ctx.lineTo(ex, ey);
+  ctx.stroke();
+  // Mid beam
+  ctx.shadowBlur  = 16;
+  ctx.strokeStyle = `rgba(255,120,0,0.7)`;
+  ctx.lineWidth   = 10;
+  ctx.beginPath();
+  ctx.moveTo(bcxL, bcyL);
+  ctx.lineTo(ex, ey);
+  ctx.stroke();
+  // Core beam
+  ctx.shadowBlur  = 8;
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth   = 3;
+  ctx.beginPath();
+  ctx.moveTo(bcxL, bcyL);
+  ctx.lineTo(ex, ey);
+  ctx.stroke();
+  // Origin flash
+  ctx.shadowColor = '#ffaa00';
+  ctx.shadowBlur  = 30;
+  ctx.fillStyle   = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(bcxL, bcyL, 10, 0, Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+}
+
+// ════════════════════════════════════════
+// 13. SHOCKWAVE RINGS
+// ════════════════════════════════════════
+if(boss.shockwaves && boss.shockwaves.length){
+  for(const sw of boss.shockwaves){
+    const swAlpha = (sw.life / sw.maxLife) * 0.85;
+    const swFrac  = sw.r / sw.maxR;
+    ctx.save();
+    ctx.globalAlpha = swAlpha;
+    ctx.shadowColor = sw.color;
+    ctx.shadowBlur  = 22;
+    // Outer ring
+    ctx.strokeStyle = sw.color;
+    ctx.lineWidth   = Math.max(1, 6*(1-swFrac));
+    ctx.beginPath();
+    ctx.arc(sw.x, sw.y, sw.r, 0, Math.PI*2);
+    ctx.stroke();
+    // Inner ring
+    ctx.globalAlpha = swAlpha * 0.4;
+    ctx.lineWidth   = Math.max(1, 3*(1-swFrac));
+    ctx.beginPath();
+    ctx.arc(sw.x, sw.y, sw.r*0.7, 0, Math.PI*2);
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+// ════════════════════════════════════════
+// 14. HIT FLASH
+// ════════════════════════════════════════
+if(boss.hitFlash > 0){
+  ctx.save();
+  ctx.globalAlpha = (boss.hitFlash/6)*0.55;
+  ctx.fillStyle   = '#ffffff';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, hw*1.1, hh*0.65, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+}
+
 ctx.restore();
 
 }
@@ -5617,68 +6713,91 @@ ctx.restore();
 function drawBossPhaseOverlay(){
 
 if(bossPhase==="warning"){
-const elapsed=Date.now()-bossPhaseTimer;
-const fade=Math.min(1, elapsed/400);
-// Pulse faster as the warning counts down
-const progress=elapsed/BOSS_WARNING_DUR;
-const pulse=0.7+0.3*Math.sin(elapsed*0.014);
+  const elapsed  = Date.now()-bossPhaseTimer;
+  const fade     = Math.min(1, elapsed/400);
+  const progress = elapsed/BOSS_WARNING_DUR;
+  const pulse    = 0.7+0.3*Math.sin(elapsed*0.014);
 
-ctx.save();
-ctx.globalAlpha=fade*pulse;
+  ctx.save();
+  ctx.globalAlpha = fade*pulse;
 
-// Red screen vignette
-const vgrd=ctx.createRadialGradient(WIDTH/2,HEIGHT/2,HEIGHT*0.25,WIDTH/2,HEIGHT/2,HEIGHT*0.85);
-vgrd.addColorStop(0,"rgba(0,0,0,0)");
-vgrd.addColorStop(1,"rgba(180,0,0,0.45)");
-ctx.fillStyle=vgrd;
-ctx.fillRect(0,0,WIDTH,HEIGHT);
+  // Red screen vignette
+  const vgrd = ctx.createRadialGradient(WIDTH/2,HEIGHT/2,HEIGHT*0.2,WIDTH/2,HEIGHT/2,HEIGHT*0.9);
+  vgrd.addColorStop(0,'rgba(0,0,0,0)');
+  vgrd.addColorStop(1,'rgba(200,0,0,0.55)');
+  ctx.fillStyle   = vgrd;
+  ctx.globalAlpha = fade;
+  ctx.fillRect(0,0,WIDTH,HEIGHT);
 
-ctx.shadowColor="#ff2200";
-ctx.shadowBlur=60;
-ctx.fillStyle="#ff2200";
-ctx.font="bold 72px Arial";
-ctx.textAlign="center";
-ctx.fillText("⚠  BOSS INCOMING!  ⚠", WIDTH/2, HEIGHT/2-30);
+  ctx.globalAlpha = fade*pulse;
+  ctx.shadowColor = '#ff2200';
+  ctx.shadowBlur  = 70;
+  ctx.fillStyle   = '#ff2200';
+  ctx.font        = 'bold 68px Arial';
+  ctx.textAlign   = 'center';
+  ctx.fillText('⚠  BOSS INCOMING!  ⚠', WIDTH/2, HEIGHT/2-36);
 
-ctx.shadowBlur=0;
-ctx.fillStyle="rgba(255,255,255,0.92)";
-ctx.font="bold 32px Arial";
-ctx.fillText("Level "+level+" Boss", WIDTH/2, HEIGHT/2+36);
+  ctx.shadowBlur = 0;
+  ctx.fillStyle  = 'rgba(255,255,255,0.95)';
+  ctx.font       = 'bold 30px Arial';
+  ctx.fillText('Level '+level+' Boss', WIDTH/2, HEIGHT/2+32);
 
-// Countdown bar
-const barW=440, barH=10;
-const barX=WIDTH/2-barW/2;
-const barY=HEIGHT/2+68;
-ctx.globalAlpha=fade*0.7;
-ctx.fillStyle="rgba(255,255,255,0.2)";
-ctx.fillRect(barX,barY,barW,barH);
-ctx.fillStyle="#ff2200";
-ctx.fillRect(barX,barY,barW*(1-progress),barH);
+  // Countdown bar
+  const barW=460, barH=10, barX=WIDTH/2-barW/2, barY=HEIGHT/2+62;
+  ctx.globalAlpha = fade*0.7;
+  ctx.fillStyle   = 'rgba(255,255,255,0.18)';
+  ctx.fillRect(barX,barY,barW,barH);
+  ctx.fillStyle   = '#ff2200';
+  ctx.shadowColor = '#ff4400';
+  ctx.shadowBlur  = 8;
+  ctx.fillRect(barX,barY,barW*(1-progress),barH);
 
-ctx.restore();
-ctx.textAlign="left";
+  ctx.restore();
+  ctx.textAlign = 'left';
+}
+
+// In-game HP phase transition flash
+if(bossPhase==='fighting' && boss && boss._phaseFlashTimer > 0){
+  boss._phaseFlashTimer--;
+  const frac = boss._phaseFlashTimer / 30;
+  ctx.save();
+  ctx.globalAlpha = frac * 0.38;
+  ctx.fillStyle   = boss.hpPhase >= 2 ? '#ff2200' : '#ff8800';
+  ctx.fillRect(0,0,WIDTH,HEIGHT);
+  ctx.restore();
+
+  ctx.save();
+  ctx.globalAlpha = frac;
+  ctx.shadowColor = boss.hpPhase >= 2 ? '#ff0000' : '#ff8800';
+  ctx.shadowBlur  = 40;
+  ctx.fillStyle   = '#ffffff';
+  ctx.font        = 'bold 52px Arial';
+  ctx.textAlign   = 'center';
+  ctx.fillText(boss.hpPhase >= 2 ? '☠  ENRAGED!' : '⚡  POWERED UP!', WIDTH/2, HEIGHT/2);
+  ctx.restore();
+  ctx.textAlign = 'left';
 }
 
 if(bossPhase==="defeated"){
-const elapsed=Date.now()-bossPhaseTimer;
-const fade=Math.max(0, 1-elapsed/BOSS_DEFEATED_DUR);
-ctx.save();
-ctx.globalAlpha=fade;
+  const elapsed = Date.now()-bossPhaseTimer;
+  const fade    = Math.max(0, 1-elapsed/BOSS_DEFEATED_DUR);
+  ctx.save();
+  ctx.globalAlpha = fade;
 
-ctx.shadowColor="#ffdd00";
-ctx.shadowBlur=50;
-ctx.fillStyle="#ffdd00";
-ctx.font="bold 72px Arial";
-ctx.textAlign="center";
-ctx.fillText("BOSS DEFEATED!", WIDTH/2, HEIGHT/2-28);
+  ctx.shadowColor = '#ffdd00';
+  ctx.shadowBlur  = 60;
+  ctx.fillStyle   = '#ffdd00';
+  ctx.font        = 'bold 72px Arial';
+  ctx.textAlign   = 'center';
+  ctx.fillText('BOSS DEFEATED!', WIDTH/2, HEIGHT/2-28);
 
-ctx.shadowBlur=0;
-ctx.fillStyle="rgba(255,255,255,0.92)";
-ctx.font="bold 30px Arial";
-ctx.fillText("Level "+(level+1)+" — Get Ready!", WIDTH/2, HEIGHT/2+42);
+  ctx.shadowBlur = 0;
+  ctx.fillStyle  = 'rgba(255,255,255,0.92)';
+  ctx.font       = 'bold 30px Arial';
+  ctx.fillText('Level '+(level+1)+' — Get Ready!', WIDTH/2, HEIGHT/2+42);
 
-ctx.restore();
-ctx.textAlign="left";
+  ctx.restore();
+  ctx.textAlign = 'left';
 }
 
 }
@@ -5714,6 +6833,7 @@ enemies.splice(i,1);
 lives--;
 triggerShake(8,12);
 achOnPlayerHit();
+comboOnPlayerHit();
 
 if(lives<=0){
 
@@ -5752,6 +6872,7 @@ bullets.splice(i,1);
 boss.health-=(b.damage||1);
 spawnDmgNumber(boss.x+boss.width/2, boss.y+10, b.damage||1, b.crit||(b.damage||1)>=2);
 triggerShake(4, 6);
+if(boss.hitFlash !== undefined) boss.hitFlash = 6;
 
 if(boss.health<=0){
 
@@ -5872,7 +6993,8 @@ function gameLoop() {
         if(!paused){
 
         // Engine exhaust every 3 frames (use frame counter, not ms modulo)
-        if(++_frameCount%3===0) spawnExhaust();
+        const isMovingNow = keys["ArrowLeft"]||keys["ArrowRight"]||keys["ArrowUp"]||keys["ArrowDown"];
+        if(++_frameCount%3===0) spawnExhaust(isMovingNow);
         updateExhaust();
         updateDmgNumbers();
 
@@ -5928,6 +7050,10 @@ function gameLoop() {
         // Achievement survival tick
         achTickSurvive();
 
+        // Combo timeout check
+        checkComboTimeout();
+        updateComboPopups();
+
         // Blitz mode: end game when timer expires
         checkBlitzTimer();
 
@@ -5935,6 +7061,7 @@ function gameLoop() {
 
         // ── Always draw (paused or not) ──
         drawExhaust();
+        drawShipGhosts();
         drawPlayer();
         drawBullets();
         drawEnemies();
@@ -5948,6 +7075,7 @@ function gameLoop() {
         drawAutoKillPowerups();
         drawZapEffects();
         drawScorePopups();
+        drawComboOverlay();
         drawBoss();
         drawBossBullets();
         drawParticles();
@@ -5980,6 +7108,7 @@ function gameLoop() {
 
         // Keep drawing the last frame
         drawExhaust();
+        drawShipGhosts();
         drawPlayer();
         drawBullets();
         drawEnemies();
